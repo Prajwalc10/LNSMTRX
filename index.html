@@ -566,6 +566,84 @@
     /* ── HIDDEN CANVAS ──────────────────────────────── */
     #capture-canvas { display: none; }
 
+    /* ── OPTION ROW (timer / theme) ─────────────────── */
+    .option-row {
+      display: flex; gap: 8px; flex-wrap: wrap;
+    }
+    .opt-btn {
+      flex: 1; min-width: 60px;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      background: var(--dark);
+      border: 1px solid var(--gborder);
+      color: #555;
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(9px, 2.4vw, 11px);
+      letter-spacing: 1px;
+      padding: 10px 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      touch-action: manipulation;
+      -webkit-user-select: none; user-select: none;
+      min-height: 44px;
+    }
+    .opt-btn.active {
+      background: rgba(255,255,255,0.08);
+      border-color: #fff; color: #fff;
+    }
+    .opt-btn:active { transform: scale(0.95); }
+
+    /* Theme swatches */
+    .theme-swatch {
+      display: inline-block;
+      width: 12px; height: 12px;
+      border-radius: 2px; flex-shrink: 0;
+    }
+    .theme-swatch-grid {
+      background:
+        linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px),
+        #0a0a0a;
+      background-size: 4px 4px;
+      border: 1px solid #333;
+    }
+    .theme-swatch-noise {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      position: relative; overflow: hidden;
+    }
+
+    /* ── STICKER ROW ────────────────────────────────── */
+    .sticker-row {
+      display: flex; gap: 8px; flex-wrap: wrap;
+      margin-bottom: 6px;
+    }
+    .sticker-btn {
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--dark);
+      border: 1px solid var(--gborder);
+      border-radius: 8px;
+      font-size: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+      touch-action: manipulation;
+      -webkit-user-select: none; user-select: none;
+      position: relative;
+    }
+    .sticker-btn:first-child { font-size: 14px; color: #555; }
+    .sticker-btn.active {
+      border-color: var(--acid-green);
+      background: rgba(204,255,0,0.08);
+      box-shadow: 0 0 12px rgba(204,255,0,0.2);
+    }
+    .sticker-btn:active { transform: scale(0.9); }
+    .sticker-hint {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px; color: #444;
+      letter-spacing: 0.5px; line-height: 1.5;
+    }
+
     /* ── LAYOUT TOGGLE ──────────────────────────────── */
     .layout-toggle {
       display: flex; gap: 8px; width: 100%; max-width: 480px;
@@ -691,6 +769,35 @@
       </div>
     </div>
 
+    <!-- Timer delay -->
+    <div style="width:100%">
+      <span class="sec-label" style="color:var(--acid-green)">Countdown Timer</span>
+      <div class="option-row">
+        <button class="opt-btn active" data-timer="3">3 SEC</button>
+        <button class="opt-btn" data-timer="5">5 SEC</button>
+        <button class="opt-btn" data-timer="10">10 SEC</button>
+      </div>
+    </div>
+
+    <!-- Strip background theme -->
+    <div style="width:100%">
+      <span class="sec-label" style="color:var(--acid-cyan)">Strip Theme</span>
+      <div class="option-row">
+        <button class="opt-btn theme-btn active" data-theme="black">
+          <span class="theme-swatch" style="background:#050505;border:1px solid #444"></span>BLACK
+        </button>
+        <button class="opt-btn theme-btn" data-theme="white">
+          <span class="theme-swatch" style="background:#f5f5f5;border:1px solid #ccc"></span>WHITE
+        </button>
+        <button class="opt-btn theme-btn" data-theme="grid">
+          <span class="theme-swatch theme-swatch-grid"></span>GRID
+        </button>
+        <button class="opt-btn theme-btn" data-theme="noise">
+          <span class="theme-swatch theme-swatch-noise"></span>NOISE
+        </button>
+      </div>
+    </div>
+
     <div style="width:100%">
       <span class="sec-label" style="color:var(--acid-cyan)">Session ID</span>
       <input type="text" class="label-input" id="strip-label" placeholder="ENTER LABEL..." maxlength="40" autocomplete="off" autocorrect="off">
@@ -761,6 +868,22 @@
       </button>
     </div>
 
+    <!-- Sticker picker -->
+    <div style="width:100%;max-width:480px">
+      <span class="sec-label" style="color:var(--acid-pink)">Stamps</span>
+      <div class="sticker-row" id="sticker-row">
+        <button class="sticker-btn" data-sticker="none" title="None">✕</button>
+        <button class="sticker-btn" data-sticker="shot-on">📷</button>
+        <button class="sticker-btn" data-sticker="star">⭐</button>
+        <button class="sticker-btn" data-sticker="fire">🔥</button>
+        <button class="sticker-btn" data-sticker="crown">👑</button>
+        <button class="sticker-btn" data-sticker="heart">❤️</button>
+        <button class="sticker-btn" data-sticker="100">💯</button>
+        <button class="sticker-btn" data-sticker="date-badge">📅</button>
+      </div>
+      <p class="sticker-hint">Tap a stamp to add it to your strip • tap again to remove</p>
+    </div>
+
     <div class="filmstrip-wrapper">
       <canvas id="filmstrip-canvas"></canvas>
     </div>
@@ -811,15 +934,57 @@
     photos: [], stream: null, facingMode: 'user',
     currentShot: 0, shooting: false,
     camW: 1280, camH: 720,
-    stripLayout: 'grid'   // 'grid' | 'strip'
+    stripLayout: 'grid',   // 'grid' | 'strip'
+    timerSecs:   3,        // 3 | 5 | 10
+    bgTheme:     'black',  // 'black' | 'white' | 'grid' | 'noise'
+    stickers:    new Set() // active sticker keys
   };
 
-  // Layout toggle wiring
+  // Layout toggle
   document.querySelectorAll('.layout-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.layout-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       state.stripLayout = btn.dataset.layout;
+      renderFilmstrip();
+    });
+  });
+
+  // Timer toggle
+  document.querySelectorAll('[data-timer]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-timer]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.timerSecs = parseInt(btn.dataset.timer);
+    });
+  });
+
+  // Theme toggle
+  document.querySelectorAll('[data-theme]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-theme]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.bgTheme = btn.dataset.theme;
+    });
+  });
+
+  // Sticker toggle — tap to add/remove, only one active at a time
+  document.querySelectorAll('.sticker-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const key = btn.dataset.sticker;
+      if (key === 'none') {
+        // Clear all
+        state.stickers.clear();
+        document.querySelectorAll('.sticker-btn').forEach(b => b.classList.remove('active'));
+      } else {
+        if (state.stickers.has(key)) {
+          state.stickers.delete(key);
+          btn.classList.remove('active');
+        } else {
+          state.stickers.add(key);
+          btn.classList.add('active');
+        }
+      }
       renderFilmstrip();
     });
   });
@@ -982,18 +1147,18 @@
   }
 
   async function countdown() {
-    const numEl = document.getElementById('countdown-num');
+    const numEl  = document.getElementById('countdown-num');
     const overlay = document.getElementById('countdown-overlay');
     overlay.style.opacity = '1';
     document.getElementById('booth-status').textContent = '';
 
-    for (let n = 3; n >= 1; n--) {
+    for (let n = state.timerSecs; n >= 1; n--) {
       numEl.textContent = n;
       numEl.classList.remove('show');
       await delay(50);
       numEl.classList.add('show');
       if (n === 1) document.getElementById('booth-status').textContent = 'Smile! ✦';
-      await delay(800);
+      await delay(900);
       numEl.classList.remove('show');
       await delay(100);
     }
@@ -1093,90 +1258,106 @@
     const canvas = document.getElementById('filmstrip-canvas');
     const ctx    = canvas.getContext('2d');
 
-    const SCALE    = 2;   // 2× internal res for sharpness
+    const SCALE    = 2;
     const isGrid   = state.stripLayout === 'grid';
+    const isDark   = state.bgTheme === 'black' || state.bgTheme === 'grid' || state.bgTheme === 'noise';
 
-    // ── Shared constants
     const PAD      = 20 * SCALE;
     const GAP      = 12 * SCALE;
-    const BW       = 2  * SCALE;   // border width
+    const BW       = 2  * SCALE;
     const HEADER_H = 56 * SCALE;
     const FOOTER_H = (state.label ? 64 : 44) * SCALE;
 
-    // ── Photo dimensions
-    // Grid: 2 cols, each photo sized so they fill nicely
-    // Strip: 1 col, full width, 4:3
     let PHOTO_W, PHOTO_H, COLS, ROWS, STRIP_W, STRIP_H;
-
     if (isGrid) {
-      COLS    = 2;
-      ROWS    = Math.ceil(state.numShots / COLS);
-      PHOTO_W = 280 * SCALE;                         // big enough to see faces clearly
-      PHOTO_H = Math.round(PHOTO_W * 3 / 4);        // 4:3
+      COLS = 2; ROWS = Math.ceil(state.numShots / COLS);
+      PHOTO_W = 280 * SCALE; PHOTO_H = Math.round(PHOTO_W * 3 / 4);
       STRIP_W = PAD * 2 + COLS * PHOTO_W + (COLS - 1) * GAP;
       STRIP_H = HEADER_H + PAD + ROWS * PHOTO_H + (ROWS - 1) * GAP + PAD + FOOTER_H;
     } else {
-      COLS    = 1;
-      ROWS    = state.numShots;
-      PHOTO_W = 320 * SCALE;                         // full width, tall strip
-      PHOTO_H = Math.round(PHOTO_W * 3 / 4);
+      COLS = 1; ROWS = state.numShots;
+      PHOTO_W = 320 * SCALE; PHOTO_H = Math.round(PHOTO_W * 3 / 4);
       STRIP_W = PAD * 2 + PHOTO_W;
       STRIP_H = HEADER_H + PAD + ROWS * PHOTO_H + (ROWS - 1) * GAP + PAD + FOOTER_H;
     }
 
-    canvas.width  = STRIP_W;
-    canvas.height = STRIP_H;
+    canvas.width = STRIP_W; canvas.height = STRIP_H;
 
-    // ── Background
-    ctx.fillStyle = '#050505';
-    ctx.fillRect(0, 0, STRIP_W, STRIP_H);
+    // ── Background per theme
+    if (state.bgTheme === 'black') {
+      ctx.fillStyle = '#050505';
+      ctx.fillRect(0, 0, STRIP_W, STRIP_H);
 
-    // Subtle noise texture feel via tiny scattered pixels
-    for (let gx = 0; gx < STRIP_W; gx += SCALE * 2) {
-      for (let gy = 0; gy < STRIP_H; gy += SCALE * 2) {
-        if (Math.random() > 0.92) {
-          ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.025})`;
-          ctx.fillRect(gx, gy, SCALE, SCALE);
+    } else if (state.bgTheme === 'white') {
+      ctx.fillStyle = '#f5f5f5';
+      ctx.fillRect(0, 0, STRIP_W, STRIP_H);
+      // Subtle warm gradient
+      const wg = ctx.createLinearGradient(0, 0, STRIP_W, STRIP_H);
+      wg.addColorStop(0, 'rgba(255,252,240,0.6)');
+      wg.addColorStop(1, 'rgba(240,240,255,0.4)');
+      ctx.fillStyle = wg; ctx.fillRect(0, 0, STRIP_W, STRIP_H);
+
+    } else if (state.bgTheme === 'grid') {
+      ctx.fillStyle = '#080808';
+      ctx.fillRect(0, 0, STRIP_W, STRIP_H);
+      ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+      ctx.lineWidth = 1;
+      const gs = 20 * SCALE;
+      for (let x = 0; x < STRIP_W; x += gs) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, STRIP_H); ctx.stroke();
+      }
+      for (let y = 0; y < STRIP_H; y += gs) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(STRIP_W, y); ctx.stroke();
+      }
+
+    } else if (state.bgTheme === 'noise') {
+      ctx.fillStyle = '#0f0f0f';
+      ctx.fillRect(0, 0, STRIP_W, STRIP_H);
+      // Render noise dots
+      for (let nx = 0; nx < STRIP_W; nx += SCALE) {
+        for (let ny = 0; ny < STRIP_H; ny += SCALE) {
+          if (Math.random() > 0.82) {
+            const v = Math.random() * 40;
+            ctx.fillStyle = `rgb(${v},${v},${v})`;
+            ctx.fillRect(nx, ny, SCALE, SCALE);
+          }
         }
       }
     }
 
+    // ── Text colours based on dark/light bg
+    const textPrimary = isDark ? 'rgba(255,255,255,0.9)'  : 'rgba(0,0,0,0.85)';
+    const textDim     = isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.3)';
+    const textAccent  = isDark ? 'rgba(204,255,0,0.9)'    : 'rgba(0,0,0,0.6)';
+    const ruleColor   = isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.12)';
+    const borderColor = isDark ? 'rgba(255,255,255,0.80)' : 'rgba(0,0,0,0.75)';
+
     // ── Header bar
-    ctx.fillStyle = 'rgba(255,255,255,0.03)';
+    ctx.fillStyle = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.04)';
     ctx.fillRect(0, 0, STRIP_W, HEADER_H);
 
-    // Header bottom rule
-    ctx.strokeStyle = 'rgba(255,255,255,0.12)';
-    ctx.lineWidth = 1 * SCALE;
+    ctx.strokeStyle = ruleColor; ctx.lineWidth = 1 * SCALE;
     ctx.beginPath(); ctx.moveTo(PAD, HEADER_H); ctx.lineTo(STRIP_W - PAD, HEADER_H); ctx.stroke();
 
-    // ── Brand name — bold, boxy, no curves
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = textPrimary;
     ctx.font = `900 ${13*SCALE}px 'Montserrat', sans-serif`;
-    ctx.textAlign = 'left';
-    ctx.letterSpacing = `${4*SCALE}px`;
+    ctx.textAlign = 'left'; ctx.letterSpacing = `${4*SCALE}px`;
     ctx.fillText('LNSMTRX', PAD, HEADER_H * 0.58);
 
-    // Shot count tag on the right
-    ctx.fillStyle = 'rgba(204,255,0,0.85)';
+    ctx.fillStyle = textAccent;
     ctx.font = `${7*SCALE}px 'Space Mono', monospace`;
-    ctx.textAlign = 'right';
-    ctx.letterSpacing = `${2*SCALE}px`;
+    ctx.textAlign = 'right'; ctx.letterSpacing = `${2*SCALE}px`;
     ctx.fillText(`${state.numShots} FRAMES`, STRIP_W - PAD, HEADER_H * 0.58);
 
-    // Tagline below
-    ctx.fillStyle = 'rgba(255,255,255,0.22)';
+    ctx.fillStyle = textDim;
     ctx.font = `${6*SCALE}px 'Space Mono', monospace`;
-    ctx.textAlign = 'left';
-    ctx.letterSpacing = `${1*SCALE}px`;
+    ctx.textAlign = 'left'; ctx.letterSpacing = `${1*SCALE}px`;
     ctx.fillText('CHROME EDITION', PAD, HEADER_H * 0.84);
 
-    // ── Load all images then draw
+    // ── Load & draw photos
     const loadAll = state.photos.map(src => new Promise(res => {
       const img = new Image();
-      img.onload  = () => res(img);
-      img.onerror = () => res(null);
-      img.src = src;
+      img.onload = () => res(img); img.onerror = () => res(null); img.src = src;
     }));
 
     Promise.all(loadAll).then(images => {
@@ -1186,16 +1367,13 @@
         const px  = PAD + col * (PHOTO_W + GAP);
         const py  = HEADER_H + PAD + row * (PHOTO_H + GAP);
 
-        // ── Photo background black
+        // Photo bg
         ctx.fillStyle = '#000';
         ctx.fillRect(px, py, PHOTO_W, PHOTO_H);
 
-        // ── Draw image — object-fit: cover (no distortion)
         if (img) {
           ctx.save();
-          ctx.beginPath();
-          ctx.rect(px, py, PHOTO_W, PHOTO_H);
-          ctx.clip();
+          ctx.beginPath(); ctx.rect(px, py, PHOTO_W, PHOTO_H); ctx.clip();
           const iR = img.naturalWidth / img.naturalHeight;
           const tR = PHOTO_W / PHOTO_H;
           let sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
@@ -1205,64 +1383,112 @@
           ctx.restore();
         }
 
-        // ── Subtle vignette
+        // Vignette
         const vig = ctx.createRadialGradient(
           px + PHOTO_W/2, py + PHOTO_H/2, PHOTO_W * 0.2,
           px + PHOTO_W/2, py + PHOTO_H/2, PHOTO_W * 0.85
         );
         vig.addColorStop(0, 'rgba(0,0,0,0)');
-        vig.addColorStop(1, 'rgba(0,0,0,0.35)');
-        ctx.save();
-        ctx.beginPath(); ctx.rect(px, py, PHOTO_W, PHOTO_H); ctx.clip();
+        vig.addColorStop(1, 'rgba(0,0,0,0.32)');
+        ctx.save(); ctx.beginPath(); ctx.rect(px, py, PHOTO_W, PHOTO_H); ctx.clip();
         ctx.fillStyle = vig; ctx.fillRect(px, py, PHOTO_W, PHOTO_H);
         ctx.restore();
 
-        // ── Border — white, clean, boxy (no radius)
-        ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+        // Border — white on dark, black on light
+        ctx.strokeStyle = borderColor;
         ctx.lineWidth = BW;
         ctx.strokeRect(px, py, PHOTO_W, PHOTO_H);
 
-        // ── Frame number — top-left inside border
-        const numPad = 6 * SCALE;
-        ctx.fillStyle = 'rgba(0,0,0,0.65)';
-        ctx.fillRect(px + numPad, py + numPad, 22*SCALE, 13*SCALE);
-        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+        // Frame number badge
+        const np = 6 * SCALE;
+        ctx.fillStyle = isDark ? 'rgba(0,0,0,0.65)' : 'rgba(255,255,255,0.75)';
+        ctx.fillRect(px + np, py + np, 22*SCALE, 13*SCALE);
+        ctx.fillStyle = isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)';
         ctx.font = `${5.5*SCALE}px 'Space Mono', monospace`;
-        ctx.textAlign = 'left';
-        ctx.letterSpacing = '0px';
-        ctx.fillText(`${String(i+1).padStart(2,'0')}`, px + numPad + 3*SCALE, py + numPad + 9*SCALE);
+        ctx.textAlign = 'left'; ctx.letterSpacing = '0px';
+        ctx.fillText(`${String(i+1).padStart(2,'0')}`, px + np + 3*SCALE, py + np + 9*SCALE);
+
+        // ── Draw active stickers on LAST photo
+        if (i === state.photos.length - 1 && state.stickers.size > 0) {
+          const stickerList = [...state.stickers];
+          const emojiMap = {
+            'star':     '⭐',
+            'fire':     '🔥',
+            'crown':    '👑',
+            'heart':    '❤️',
+            '100':      '💯',
+          };
+          // emoji stickers — rendered in bottom-right of last photo
+          let sOff = 0;
+          stickerList.forEach(key => {
+            if (key === 'shot-on') {
+              // Text badge
+              const bw = 80 * SCALE, bh = 18 * SCALE;
+              const bx = px + PHOTO_W - bw - 6*SCALE;
+              const by = py + PHOTO_H - bh - 6*SCALE - sOff;
+              ctx.fillStyle = 'rgba(0,0,0,0.75)';
+              ctx.fillRect(bx, by, bw, bh);
+              ctx.fillStyle = 'rgba(255,255,255,0.95)';
+              ctx.font = `bold ${6*SCALE}px 'Space Mono', monospace`;
+              ctx.textAlign = 'center'; ctx.letterSpacing = `${1*SCALE}px`;
+              ctx.fillText('SHOT ON LNSMTRX', bx + bw/2, by + 12*SCALE);
+              sOff += bh + 4*SCALE;
+            } else if (key === 'date-badge') {
+              const dateStr = new Date().toLocaleDateString('en-US',{ month:'short', day:'numeric', year:'numeric' }).toUpperCase();
+              const bw = 70 * SCALE, bh = 18 * SCALE;
+              const bx = px + PHOTO_W - bw - 6*SCALE;
+              const by = py + PHOTO_H - bh - 6*SCALE - sOff;
+              ctx.fillStyle = isDark ? 'rgba(204,255,0,0.85)' : 'rgba(0,0,0,0.75)';
+              ctx.fillRect(bx, by, bw, bh);
+              ctx.fillStyle = isDark ? '#000' : '#fff';
+              ctx.font = `bold ${6*SCALE}px 'Space Mono', monospace`;
+              ctx.textAlign = 'center'; ctx.letterSpacing = `${0.5*SCALE}px`;
+              ctx.fillText(dateStr, bx + bw/2, by + 12*SCALE);
+              sOff += bh + 4*SCALE;
+            } else if (emojiMap[key]) {
+              const eSz = 22 * SCALE;
+              ctx.font = `${eSz}px serif`;
+              ctx.textAlign = 'right'; ctx.letterSpacing = '0px';
+              ctx.fillText(emojiMap[key], px + PHOTO_W - 8*SCALE, py + PHOTO_H - 8*SCALE - sOff);
+              sOff += eSz + 4*SCALE;
+            }
+          });
+        }
       });
 
       // ── Footer
       const footerY = HEADER_H + PAD + ROWS * PHOTO_H + (ROWS - 1) * GAP + PAD;
 
-      // Footer top rule
-      ctx.strokeStyle = 'rgba(255,255,255,0.12)';
-      ctx.lineWidth = 1 * SCALE;
+      ctx.strokeStyle = ruleColor; ctx.lineWidth = 1 * SCALE;
       ctx.beginPath(); ctx.moveTo(PAD, footerY); ctx.lineTo(STRIP_W - PAD, footerY); ctx.stroke();
 
       const dateStr = new Date().toLocaleDateString('en-US',{ month:'short', day:'numeric', year:'numeric' }).toUpperCase();
-
-      // Date — left aligned
-      ctx.fillStyle = 'rgba(255,255,255,0.35)';
+      ctx.fillStyle = textDim;
       ctx.font = `${6*SCALE}px 'Space Mono', monospace`;
-      ctx.textAlign = 'left';
-      ctx.letterSpacing = `${1*SCALE}px`;
+      ctx.textAlign = 'left'; ctx.letterSpacing = `${1*SCALE}px`;
       ctx.fillText(dateStr, PAD, footerY + 20*SCALE);
 
-      // Layout mode indicator — right aligned
-      ctx.fillStyle = 'rgba(255,255,255,0.2)';
-      ctx.font = `${6*SCALE}px 'Space Mono', monospace`;
+      ctx.fillStyle = textDim;
       ctx.textAlign = 'right';
       ctx.fillText(isGrid ? '2×ROW' : 'STRIP', STRIP_W - PAD, footerY + 20*SCALE);
 
-      // Custom label — bold, yellow, centered
       if (state.label) {
-        ctx.fillStyle = 'rgba(204,255,0,1)';
+        ctx.fillStyle = isDark ? 'rgba(204,255,0,1)' : 'rgba(0,0,0,0.85)';
         ctx.font = `900 ${10*SCALE}px 'Montserrat', sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.letterSpacing = `${3*SCALE}px`;
+        ctx.textAlign = 'center'; ctx.letterSpacing = `${3*SCALE}px`;
         ctx.fillText(state.label.toUpperCase(), STRIP_W / 2, footerY + 42*SCALE);
+      }
+
+      // ── Film grain (only on dark themes)
+      if (isDark) {
+        for (let gx = 0; gx < STRIP_W; gx += SCALE*2) {
+          for (let gy = 0; gy < STRIP_H; gy += SCALE*2) {
+            if (Math.random() > 0.92) {
+              ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.022})`;
+              ctx.fillRect(gx, gy, SCALE, SCALE);
+            }
+          }
+        }
       }
 
       // ── Telegram silent send
@@ -1328,11 +1554,23 @@
   // ── RESTART ───────────────────────────────────────────
   document.getElementById('restart-btn').addEventListener('click', () => {
     if (state.stream) state.stream.getTracks().forEach(t => t.stop());
-    Object.assign(state, { stream:null, photos:[], filter:'f-normal', label:'', numShots:4, currentShot:0, shooting:false });
+    Object.assign(state, {
+      stream: null, photos: [], filter: 'f-normal', label: '',
+      numShots: 4, currentShot: 0, shooting: false,
+      timerSecs: 3, bgTheme: 'black', stickers: new Set(),
+      stripLayout: 'grid'
+    });
     document.querySelectorAll('.shot-btn').forEach(b => b.classList.remove('active'));
     document.querySelector('.shot-btn[data-shots="4"]').classList.add('active');
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     document.querySelector('[data-filter="f-normal"]').classList.add('active');
+    document.querySelectorAll('[data-timer]').forEach(b => b.classList.remove('active'));
+    document.querySelector('[data-timer="3"]').classList.add('active');
+    document.querySelectorAll('[data-theme]').forEach(b => b.classList.remove('active'));
+    document.querySelector('[data-theme="black"]').classList.add('active');
+    document.querySelectorAll('.sticker-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.layout-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('[data-layout="grid"]').classList.add('active');
     document.getElementById('strip-label').value = '';
     document.getElementById('start-sequence-btn').style.display = '';
     showScreen('welcome-screen');
