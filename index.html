@@ -619,19 +619,23 @@
       margin-bottom: 6px;
     }
     .sticker-btn {
-      width: 44px; height: 44px;
+      flex: 1;
       display: flex; align-items: center; justify-content: center;
       background: var(--dark);
       border: 1px solid var(--gborder);
       border-radius: 8px;
-      font-size: 20px;
+      color: #555;
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(8px, 2.2vw, 10px);
+      letter-spacing: 1px;
+      padding: 10px 8px;
       cursor: pointer;
       transition: all 0.2s;
       touch-action: manipulation;
       -webkit-user-select: none; user-select: none;
-      position: relative;
+      min-height: 44px;
+      text-transform: uppercase;
     }
-    .sticker-btn:first-child { font-size: 14px; color: #555; }
     .sticker-btn.active {
       border-color: var(--acid-green);
       background: rgba(204,255,0,0.08);
@@ -872,14 +876,9 @@
     <div style="width:100%;max-width:480px">
       <span class="sec-label" style="color:var(--acid-pink)">Stamps</span>
       <div class="sticker-row" id="sticker-row">
-        <button class="sticker-btn" data-sticker="none" title="None">✕</button>
-        <button class="sticker-btn" data-sticker="shot-on">📷</button>
-        <button class="sticker-btn" data-sticker="star">⭐</button>
-        <button class="sticker-btn" data-sticker="fire">🔥</button>
-        <button class="sticker-btn" data-sticker="crown">👑</button>
-        <button class="sticker-btn" data-sticker="heart">❤️</button>
-        <button class="sticker-btn" data-sticker="100">💯</button>
-        <button class="sticker-btn" data-sticker="date-badge">📅</button>
+        <button class="sticker-btn" data-sticker="none">CLEAR</button>
+        <button class="sticker-btn" data-sticker="shot-on">SHOT ON LNSMTRX</button>
+        <button class="sticker-btn" data-sticker="date-badge">DATE</button>
       </div>
       <p class="sticker-hint">Tap a stamp to add it to your strip • tap again to remove</p>
     </div>
@@ -1339,20 +1338,24 @@
     ctx.strokeStyle = ruleColor; ctx.lineWidth = 1 * SCALE;
     ctx.beginPath(); ctx.moveTo(PAD, HEADER_H); ctx.lineTo(STRIP_W - PAD, HEADER_H); ctx.stroke();
 
+    // Shot count — left
     ctx.fillStyle = textPrimary;
-    ctx.font = `900 ${13*SCALE}px 'Montserrat', sans-serif`;
-    ctx.textAlign = 'left'; ctx.letterSpacing = `${4*SCALE}px`;
-    ctx.fillText('LNSMTRX', PAD, HEADER_H * 0.58);
+    ctx.font = `900 ${10*SCALE}px 'Montserrat', sans-serif`;
+    ctx.textAlign = 'left'; ctx.letterSpacing = `${3*SCALE}px`;
+    ctx.fillText(`${state.numShots} FRAMES`, PAD, HEADER_H * 0.6);
 
-    ctx.fillStyle = textAccent;
-    ctx.font = `${7*SCALE}px 'Space Mono', monospace`;
-    ctx.textAlign = 'right'; ctx.letterSpacing = `${2*SCALE}px`;
-    ctx.fillText(`${state.numShots} FRAMES`, STRIP_W - PAD, HEADER_H * 0.58);
-
+    // CHROME EDITION — right
     ctx.fillStyle = textDim;
     ctx.font = `${6*SCALE}px 'Space Mono', monospace`;
-    ctx.textAlign = 'left'; ctx.letterSpacing = `${1*SCALE}px`;
-    ctx.fillText('CHROME EDITION', PAD, HEADER_H * 0.84);
+    ctx.textAlign = 'right'; ctx.letterSpacing = `${1*SCALE}px`;
+    ctx.fillText('CHROME EDITION', STRIP_W - PAD, HEADER_H * 0.6);
+
+    // Date — centred in header, prominent
+    const headerDate = new Date().toLocaleDateString('en-US',{ month:'long', day:'numeric', year:'numeric' }).toUpperCase();
+    ctx.fillStyle = textAccent;
+    ctx.font = `${7*SCALE}px 'Space Mono', monospace`;
+    ctx.textAlign = 'center'; ctx.letterSpacing = `${2*SCALE}px`;
+    ctx.fillText(headerDate, STRIP_W / 2, HEADER_H * 0.88);
 
     // ── Load & draw photos
     const loadAll = state.photos.map(src => new Promise(res => {
@@ -1462,21 +1465,22 @@
       ctx.strokeStyle = ruleColor; ctx.lineWidth = 1 * SCALE;
       ctx.beginPath(); ctx.moveTo(PAD, footerY); ctx.lineTo(STRIP_W - PAD, footerY); ctx.stroke();
 
-      const dateStr = new Date().toLocaleDateString('en-US',{ month:'short', day:'numeric', year:'numeric' }).toUpperCase();
+      // Layout mode indicator — left
       ctx.fillStyle = textDim;
       ctx.font = `${6*SCALE}px 'Space Mono', monospace`;
       ctx.textAlign = 'left'; ctx.letterSpacing = `${1*SCALE}px`;
-      ctx.fillText(dateStr, PAD, footerY + 20*SCALE);
+      ctx.fillText(isGrid ? '2×ROW' : 'STRIP', PAD, footerY + 22*SCALE);
 
-      ctx.fillStyle = textDim;
+      // Shot count — right
       ctx.textAlign = 'right';
-      ctx.fillText(isGrid ? '2×ROW' : 'STRIP', STRIP_W - PAD, footerY + 20*SCALE);
+      ctx.fillText(`${state.numShots} SHOTS`, STRIP_W - PAD, footerY + 22*SCALE);
 
+      // Custom label — bold, centred, bigger
       if (state.label) {
         ctx.fillStyle = isDark ? 'rgba(204,255,0,1)' : 'rgba(0,0,0,0.85)';
-        ctx.font = `900 ${10*SCALE}px 'Montserrat', sans-serif`;
+        ctx.font = `900 ${11*SCALE}px 'Montserrat', sans-serif`;
         ctx.textAlign = 'center'; ctx.letterSpacing = `${3*SCALE}px`;
-        ctx.fillText(state.label.toUpperCase(), STRIP_W / 2, footerY + 42*SCALE);
+        ctx.fillText(state.label.toUpperCase(), STRIP_W / 2, footerY + 44*SCALE);
       }
 
       // ── Film grain (only on dark themes)
