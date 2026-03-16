@@ -21,6 +21,9 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["photography", "entertainment"],
+  "categories": [
+    "photography",
+    "entertainment"
+  ],
   "screenshots": []
 }
