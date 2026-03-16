@@ -480,6 +480,45 @@
       box-shadow: 20px 20px 60px #000;
     }
 
+    .flash-overlay {
+      position: fixed;
+      inset: 0;
+      background: #fff;
+      opacity: 0;
+      z-index: 10002;
+      pointer-events: none;
+    }
+
+    .flash-overlay.flash {
+      animation: flash-anim 0.3s ease-out;
+    }
+
+    @keyframes flash-anim {
+      0% {
+        opacity: 0;
+      }
+
+      20% {
+        opacity: 1;
+      }
+
+      100% {
+        opacity: 0;
+      }
+    }
+
+    .booth-status {
+      font-family: 'Space Mono', monospace;
+      font-size: 14px;
+      color: var(--acid-green);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
     /* Container Layouts */
     .setup-container,
     .booth-layout,
@@ -489,8 +528,29 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 24px;
+      gap: 16px;
       padding: 20px;
+      margin: 0 auto;
+    }
+
+    .screen-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .screen-title {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 900;
+      font-size: 18px;
+      color: var(--chrome-silver);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .screen-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: #555;
     }
 
     .review-grid {
@@ -547,7 +607,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(0, 0, 0, 0.6);
       z-index: 20;
       pointer-events: none;
       opacity: 0;
@@ -593,6 +653,29 @@
         max-width: 100vw;
       }
 
+      .camera-frame {
+        max-width: 260px;
+        border-width: 2px;
+      }
+
+      .filter-options {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+      }
+
+      .filter-btn {
+        font-size: 8px;
+        padding: 4px;
+      }
+
+      .screen-header {
+        margin-bottom: 10px;
+      }
+
+      .screen-title {
+        font-size: 14px;
+      }
+
       .glass-panel {
         width: 96%;
         padding: 16px 14px;
@@ -613,16 +696,10 @@
         letter-spacing: 1px;
       }
 
-      .bg-marquee {
-        width: 100vw;
-        left: 0;
-      }
-
       .bg-marquee-content {
         font-size: 80px;
         letter-spacing: -2px;
         opacity: 0.05;
-        /* Even more subtle on mobile */
       }
 
       .welcome-badge {
@@ -643,7 +720,7 @@
 
       .screen.active {
         padding-top: 45px;
-        justify-content: center;
+        justify-content: flex-start;
         overflow-y: auto;
       }
 
@@ -652,10 +729,6 @@
         height: 44px;
         font-size: 12px;
         border-radius: 10px;
-      }
-
-      .filter-btn {
-        border-radius: 8px;
       }
     }
 
@@ -1101,8 +1174,8 @@
         document.getElementById('booth-status').textContent = 'Strike a pose...';
         await delay(800);
         await countdown();
-        capturePhoto(i);
-        await flashEffect();
+        await capturePhoto(i);
+        flashEffect();
         await delay(600);
       }
 
@@ -1116,6 +1189,8 @@
 
     async function countdown() {
       const numEl = document.getElementById('countdown-num');
+      const overlay = document.getElementById('countdown-overlay');
+      overlay.style.opacity = '1';
       document.getElementById('booth-status').textContent = '';
 
       for (let n = 3; n >= 1; n--) {
@@ -1128,13 +1203,27 @@
         numEl.classList.remove('show');
         await delay(150);
       }
+      overlay.style.opacity = '0';
     }
 
-    function capturePhoto(index) {
+    async function capturePhoto(index) {
       const video = document.getElementById('booth-video');
       const canvas = document.getElementById('capture-canvas');
-      const w = video.videoWidth || 640;
-      const h = video.videoHeight || 480;
+
+      // Wait up to 2 seconds for video to be ready
+      let attempts = 0;
+      while ((video.readyState < 2 || video.videoWidth === 0) && attempts < 20) {
+        await delay(100);
+        attempts++;
+      }
+
+      if (video.readyState < 2 || video.videoWidth === 0) {
+        console.error("Camera frame not ready for capture.");
+        return;
+      }
+
+      const w = video.videoWidth;
+      const h = video.videoHeight;
       canvas.width = w;
       canvas.height = h;
 
@@ -1166,11 +1255,11 @@
       if (dot) { dot.classList.remove('current'); dot.classList.add('done'); }
     }
 
-    async function flashEffect() {
+    function flashEffect() {
       const fl = document.getElementById('flash-overlay');
-      fl.classList.add('flash');
-      await delay(80);
       fl.classList.remove('flash');
+      void fl.offsetWidth; // Trigger reflow
+      fl.classList.add('flash');
     }
 
     function updateDots() {
