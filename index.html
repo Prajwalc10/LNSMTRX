@@ -693,6 +693,39 @@
     .fp-blueprint { background: #0d2240; border: 3px solid #2a6496; }
     .fp-newspaper { background: #f0ece0; border: 3px solid #2a2a2a; }
 
+    /* ── POLAROID COLOR PICKER ──────────────────────── */
+    .pcolor-row {
+      display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px;
+    }
+    .pcolor-btn {
+      width: 36px; height: 36px;
+      border-radius: 4px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+      touch-action: manipulation;
+      flex-shrink: 0;
+      position: relative;
+      outline: none;
+    }
+    .pcolor-btn.active {
+      border-color: #fff;
+      box-shadow: 0 0 0 2px rgba(255,255,255,0.4);
+      transform: scale(1.15);
+    }
+    .pcolor-btn:active { transform: scale(0.92); }
+    /* Custom color button */
+    .pcolor-custom {
+      background: conic-gradient(red,yellow,lime,cyan,blue,magenta,red) !important;
+      color: #000; font-size: 16px; font-weight: 900;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .pcolor-custom input[type="color"] {
+      position: absolute; inset: 0;
+      opacity: 0; width: 100%; height: 100%;
+      cursor: pointer; border: none; padding: 0;
+    }
+
     /* ── LAYOUT TOGGLE ──────────────────────────────── */
     .layout-toggle {
       display: flex; gap: 8px; width: 100%; max-width: 480px;
@@ -932,6 +965,26 @@
         <button class="frame-btn" data-frame="blueprint"><span class="frame-preview fp-blueprint"></span>BLUEPRINT</button>
         <button class="frame-btn" data-frame="newspaper"><span class="frame-preview fp-newspaper"></span>PAPER</button>
       </div>
+
+      <!-- Polaroid color picker — shown only when polaroid is selected -->
+      <div id="polaroid-colors" style="display:none;margin-top:10px">
+        <span class="sec-label" style="color:rgba(255,255,255,0.4)">Polaroid Color</span>
+        <div class="pcolor-row">
+          <button class="pcolor-btn active" data-pcolor="#fafaf8" style="background:#fafaf8" title="White"></button>
+          <button class="pcolor-btn" data-pcolor="#f5ead0" style="background:#f5ead0" title="Cream"></button>
+          <button class="pcolor-btn" data-pcolor="#1a1a1a" style="background:#1a1a1a" title="Black"></button>
+          <button class="pcolor-btn" data-pcolor="#c9a84c" style="background:#c9a84c" title="Gold"></button>
+          <button class="pcolor-btn" data-pcolor="#e8849a" style="background:#e8849a" title="Rose"></button>
+          <button class="pcolor-btn" data-pcolor="#4a6fa5" style="background:#4a6fa5" title="Slate"></button>
+          <button class="pcolor-btn" data-pcolor="#ccff00" style="background:#ccff00" title="Acid"></button>
+          <button class="pcolor-btn" data-pcolor="#ff00ff" style="background:#ff00ff" title="Pink"></button>
+          <button class="pcolor-btn" data-pcolor="#00ffff" style="background:#00ffff" title="Cyan"></button>
+          <button class="pcolor-btn pcolor-custom" data-pcolor="custom" title="Custom color">
+            <input type="color" id="pcolor-custom-input" value="#ffffff">
+            +
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Sticker picker -->
@@ -999,7 +1052,8 @@
     timerSecs:   3,
     bgTheme:     'black',
     stickers:    new Set(),
-    frame:       'none'   // frame style key
+    frame:       'none',        // frame style key
+    polaroidColor: '#fafaf8'    // active polaroid frame color
   };
 
   // Frame toggle
@@ -1008,8 +1062,31 @@
       document.querySelectorAll('.frame-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       state.frame = btn.dataset.frame;
+      // Show/hide polaroid color picker
+      document.getElementById('polaroid-colors').style.display =
+        state.frame === 'polaroid' ? 'block' : 'none';
       renderFilmstrip();
     });
+  });
+
+  // Polaroid color swatches
+  document.querySelectorAll('.pcolor-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.pcolor === 'custom') return; // handled by input
+      document.querySelectorAll('.pcolor-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.polaroidColor = btn.dataset.pcolor;
+      renderFilmstrip();
+    });
+  });
+
+  // Custom color input
+  const customInput = document.getElementById('pcolor-custom-input');
+  customInput.addEventListener('input', () => {
+    document.querySelectorAll('.pcolor-btn').forEach(b => b.classList.remove('active'));
+    customInput.parentElement.classList.add('active');
+    state.polaroidColor = customInput.value;
+    renderFilmstrip();
   });
 
   // Layout toggle
@@ -1342,7 +1419,7 @@
       gold:      { pad: 6*SCALE,  bg: null },
       rose:      { pad: 6*SCALE,  bg: null },
       slate:     { pad: 6*SCALE,  bg: null },
-      polaroid:  { pad: 0,        bg: '#f5f5f0' },  // overrides strip bg
+      polaroid:  { pad: 0,        bg: null, padTop: 6*2, padSide: 6*2, padBottom: 20*2 },
       vintage:   { pad: 8*SCALE,  bg: '#1e1008' },
       blueprint: { pad: 8*SCALE,  bg: '#0a1a2e' },
       newspaper: { pad: 6*SCALE,  bg: '#ede8d8' },
@@ -1368,8 +1445,13 @@
       STRIP_W = PAD * 2 + PHOTO_W + FP * 2;
       STRIP_H = HEADER_H + PAD + ROWS * (PHOTO_H + FP*2) + (ROWS-1) * GAP + PAD + FOOTER_H;
     }
-    const CELL_W = PHOTO_W + FP * 2;
-    const CELL_H = PHOTO_H + FP * 2;
+    // For polaroid: asymmetric padding (thin top/sides, thick bottom)
+    const isPolaroid = frame === 'polaroid';
+    const FP_TOP    = isPolaroid ? 5*SCALE  : FP;
+    const FP_SIDE   = isPolaroid ? 5*SCALE  : FP;
+    const FP_BOTTOM = isPolaroid ? 18*SCALE : FP;
+    const CELL_W = PHOTO_W + FP_SIDE * 2;
+    const CELL_H = PHOTO_H + FP_TOP + FP_BOTTOM;
 
     canvas.width = STRIP_W; canvas.height = STRIP_H;
 
@@ -1454,11 +1536,11 @@
         const row  = Math.floor(i / COLS);
         const cellX = PAD + col * (CELL_W + GAP);
         const cellY = HEADER_H + PAD + row * (CELL_H + GAP);
-        const px   = cellX + FP;  // photo origin inside frame padding
-        const py   = cellY + FP;
+        const px   = cellX + FP_SIDE;
+        const py   = cellY + FP_TOP;
 
-        // ── Draw the frame area first (the padding zone)
-        drawFrameBackground(ctx, frame, cellX, cellY, CELL_W, CELL_H, FP, SCALE, i);
+        // ── Draw the frame area first
+        drawFrameBackground(ctx, frame, cellX, cellY, CELL_W, CELL_H, FP, SCALE, i, FP_TOP, FP_SIDE, FP_BOTTOM);
 
         // ── Photo bg
         ctx.fillStyle = '#000';
@@ -1553,8 +1635,8 @@
   }
 
   // ── FRAME BACKGROUND (the padding zone around each photo) ──
-  function drawFrameBackground(ctx, frame, cx, cy, cw, ch, fp, S, idx) {
-    if (fp === 0) return;
+  function drawFrameBackground(ctx, frame, cx, cy, cw, ch, fp, S, idx, fpTop, fpSide, fpBottom) {
+    if (fp === 0 && frame !== 'polaroid') return;
     switch(frame) {
       case 'chalk':
         ctx.fillStyle = '#f0f0f0'; ctx.fillRect(cx,cy,cw,ch); break;
@@ -1575,10 +1657,26 @@
         g.addColorStop(0,'#6b8cbf'); g.addColorStop(1,'#1a3260');
         ctx.fillStyle=g; ctx.fillRect(cx,cy,cw,ch); break;
       }
-      case 'polaroid':
-        // White frame, thick bottom
-        ctx.fillStyle='#fafaf8'; ctx.fillRect(cx,cy,cw,ch);
+      case 'polaroid': {
+        // Fill the entire cell with chosen color
+        ctx.fillStyle = state.polaroidColor; ctx.fillRect(cx,cy,cw,ch);
+        // Subtle inner shadow for depth
+        const pg = ctx.createLinearGradient(cx,cy,cx,cy+ch);
+        pg.addColorStop(0,'rgba(0,0,0,0.07)');
+        pg.addColorStop(0.06,'rgba(0,0,0,0)');
+        pg.addColorStop(0.94,'rgba(0,0,0,0)');
+        pg.addColorStop(1,'rgba(0,0,0,0.14)');
+        ctx.fillStyle=pg; ctx.fillRect(cx,cy,cw,ch);
+        // Frame number in the bottom thick area (polaroid label area)
+        const hex = state.polaroidColor.replace('#','');
+        const r=parseInt(hex.slice(0,2),16)||0, g=parseInt(hex.slice(2,4),16)||0, b=parseInt(hex.slice(4,6),16)||0;
+        const luma=(r*0.299+g*0.587+b*0.114)/255;
+        ctx.fillStyle = luma > 0.5 ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.5)';
+        ctx.font = `${6*S}px 'Space Mono', monospace`;
+        ctx.textAlign = 'center'; ctx.letterSpacing = `${1*S}px`;
+        ctx.fillText(`${String(idx+1).padStart(2,'0')}`, cx + cw/2, cy + ch - (fpBottom||18*S)/2 + 3*S);
         break;
+      }
       case 'vintage': {
         // Sepia-brown textured frame
         ctx.fillStyle='#5c3820'; ctx.fillRect(cx,cy,cw,ch);
@@ -1633,8 +1731,14 @@
         g.addColorStop(0,'rgba(120,160,210,0.95)'); g.addColorStop(1,'rgba(30,60,120,0.9)');
         ctx.strokeStyle=g; ctx.strokeRect(px,py,pw,ph); break;
       }
-      case 'polaroid':
-        ctx.strokeStyle='rgba(200,200,195,0.6)'; ctx.lineWidth=1*S; ctx.strokeRect(px,py,pw,ph); break;
+      case 'polaroid': {
+        // Determine if the chosen color is light or dark for border contrast
+        const hex = state.polaroidColor.replace('#','');
+        const r=parseInt(hex.slice(0,2),16), g=parseInt(hex.slice(2,4),16), b=parseInt(hex.slice(4,6),16);
+        const luma = (r*0.299 + g*0.587 + b*0.114) / 255;
+        ctx.strokeStyle = luma > 0.5 ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.2)';
+        ctx.lineWidth = 1*S; ctx.strokeRect(px,py,pw,ph); break;
+      }
       case 'vintage':
         // Worn sepia border with rough inner edge suggestion
         ctx.strokeStyle='rgba(180,130,80,0.7)'; ctx.lineWidth=1.5*S; ctx.strokeRect(px,py,pw,ph);
@@ -1715,7 +1819,7 @@
       stream: null, photos: [], filter: 'f-normal', label: '',
       numShots: 4, currentShot: 0, shooting: false,
       timerSecs: 3, bgTheme: 'black', stickers: new Set(),
-      stripLayout: 'grid', frame: 'none'
+      stripLayout: 'grid', frame: 'none', polaroidColor: '#fafaf8'
     });
     document.querySelectorAll('.shot-btn').forEach(b => b.classList.remove('active'));
     document.querySelector('.shot-btn[data-shots="4"]').classList.add('active');
@@ -1728,6 +1832,9 @@
     document.querySelectorAll('.sticker-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.frame-btn').forEach(b => b.classList.remove('active'));
     document.querySelector('[data-frame="none"]').classList.add('active');
+    document.getElementById('polaroid-colors').style.display = 'none';
+    document.querySelectorAll('.pcolor-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('[data-pcolor="#fafaf8"]').classList.add('active');
     document.querySelector('[data-layout="grid"]').classList.add('active');
     document.getElementById('strip-label').value = '';
     document.getElementById('start-sequence-btn').style.display = '';
